@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Stats Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Setup Modal (Initially Shown) -->
+    <div id="setupModal" class="modal" style="display: flex;">
+        <div class="modal-content">
+            <h2>Game Setup</h2>
+            <form id="setupForm">
+                <div class="form-group">
+                    <label for="opponent">Opponent Name:</label>
+                    <input type="text" id="opponent" name="opponent" required>
+                </div>
+                <div class="form-group">
+                    <label for="qbNumber">Starting QB Number:</label>
+                    <input type="number" id="qbNumber" name="qbNumber" min="1" max="99" required>
+                </div>
+                <button type="submit" class="btn">Start Game</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Input Modal (Hidden by default) -->
+    <div id="inputModal" class="modal">
+        <div class="modal-content">
+            <h3 id="inputTitle">Input</h3>
+            <form id="inputForm">
+                <div id="inputFields"></div>
+                <div class="button-group">
+                    <button type="submit" class="btn">Submit</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div class="container">
+        <header>
+            <h1>Football Stats Tracker vs <span id="opponentDisplay"></span></h1>
+        </header>
+        
+        <section class="action-buttons">
+            <button class="btn" id="passBtn">Pass</button>
+            <button class="btn" id="rushBtn">Rush</button>
+            <button class="btn" id="kickBtn">Kick</button>
+            <button class="btn" id="defenseBtn">Defense</button>
+            <button class="btn" id="flagBtn">Flag</button>
+            <button class="btn" id="undoBtn">Undo</button>
+            <button class="btn" id="changeQbBtn">Change QB</button>
+            <button class="btn" id="endGameBtn">End Game</button>
+        </section>
+        
+        <section class="stats-windows">
+            <div class="stats-window" id="passStats">
+                <div class="window-title">Pass Statistics</div>
+                <div id="passStatsContent">No passing stats recorded yet</div>
+            </div>
+            <div class="stats-window" id="rushStats">
+                <div class="window-title">Rush Statistics</div>
+                <div id="rushStatsContent">No rushing stats recorded yet</div>
+            </div>
+            <div class="stats-window" id="kickStats">
+                <div class="window-title">Kicking Statistics</div>
+                <div id="kickStatsContent">No kicking stats recorded yet</div>
+            </div>
+            <div class="stats-window" id="defenseStats">
+                <div class="window-title">Defensive Statistics</div>
+                <div id="defenseStatsContent">No defensive stats recorded yet</div>
+            </div>
+            <div class="stats-window" id="penaltyStats">
+                <div class="window-title">Penalties</div>
+                <div id="penaltyStatsContent">No penalties recorded yet</div>
+            </div>
+        </section>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
