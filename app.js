@@ -911,6 +911,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle End Game
     function handleEndGame() {
         // Generate and download final stats
+        console.log("End game triggered");
         const statsText = generateFinalStats();
         downloadStats(statsText);
     }
@@ -998,7 +999,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `stats_vs_${gameData.opponent.replace(/\s+/g, '_')}.pdf`;
+        a.download = `stats_vs_${gameData.opponent.replace(/\s+/g, '_')}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
