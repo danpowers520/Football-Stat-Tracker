@@ -129,10 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
         handleUndo();
     });
     
-    // Change QB Button
-    changeQbBtn.addEventListener('click', function() {
-        handleChangeQB();
-    });
     
     // End Game Button
     endGameBtn.addEventListener('click', function() {
