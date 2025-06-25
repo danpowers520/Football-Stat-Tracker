@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const flagBtn = document.getElementById('flagBtn');
     const undoBtn = document.getElementById('undoBtn');
     const changeQbBtn = document.getElementById('changeQbBtn');
-    const endGameBtn = document.getElementById('endGameBtn');
+    const endGameBtn = document.getElementById('endGameBtn').addEventListener("click", handleEndGame);
     
     // Stats content divs
     const passStatsContent = document.getElementById('passStatsContent');
