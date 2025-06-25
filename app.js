@@ -998,7 +998,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `stats_vs_${gameData.opponent.replace(/\s+/g, '_')}.txt`;
+        a.download = `stats_vs_${gameData.opponent.replace(/\s+/g, '_')}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
