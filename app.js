@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const defenseBtn = document.getElementById('defenseBtn');
     const flagBtn = document.getElementById('flagBtn');
     const undoBtn = document.getElementById('undoBtn');
-    const changeQbBtn = document.getElementById('changeQbBtn');
     const endGameBtn = document.getElementById('endGameBtn').addEventListener("click", handleEndGame);
 
     // Stats content divs
