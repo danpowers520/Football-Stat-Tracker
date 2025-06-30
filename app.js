@@ -44,8 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputTitle = document.getElementById('inputTitle');
     const inputFields = document.getElementById('inputFields');
     const cancelBtn = document.getElementById('cancelBtn');
-    // Track the current active submit handler for the input form
-    let currentSubmitHandler = null;
     const opponentDisplay = document.getElementById('opponentDisplay');
 
     // Action buttons
@@ -137,10 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Cancel button for input modal
-    cancelBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('Cancel button clicked');
+    cancelBtn.addEventListener('click', function() {
         closeInputModal();
     });
 
@@ -214,12 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Set up the form submission
-
-// Ensure previous submit handler is removed before attaching a new one
-if (currentSubmitHandler) {
-    inputForm.removeEventListener('submit', currentSubmitHandler);
-    currentSubmitHandler = null;
-}
         const submitHandler = function(e) {
             e.preventDefault();
 
@@ -240,15 +229,12 @@ if (currentSubmitHandler) {
 
             // Remove the event listener to prevent memory leaks
             inputForm.removeEventListener('submit', submitHandler);
-            currentSubmitHandler = null;
 
             // Call the callback with the collected data
             callback(data);
         };
 
         inputForm.addEventListener('submit', submitHandler);
-        // Track the active handler
-        currentSubmitHandler = submitHandler;
 
         // Show the modal
         inputModal.style.display = 'flex';
@@ -256,17 +242,6 @@ if (currentSubmitHandler) {
 
     function closeInputModal() {
         inputModal.style.display = 'none';
-
-// Clean up active submit listener if any
-if (currentSubmitHandler) {
-    inputForm.removeEventListener('submit', currentSubmitHandler);
-    currentSubmitHandler = null;
-}
-// Clear any dynamic fields for next use
-inputFields.innerHTML = '';
-// Hide using multiple methods for robustness
-inputModal.style.cssText = 'display: none !important;';
-inputModal.classList.add('hidden');
     }
 
     // Handle Pass Play
