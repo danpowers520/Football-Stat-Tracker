@@ -1,4 +1,4 @@
-// Football Stats Tracker - JavaScript with Modal Fix
+// Football Stats Tracker - JavaScript with Modal FixMore actions
 document.addEventListener('DOMContentLoaded', function() {
     // Game data object to store all statistics
     let gameData = {
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputFields = document.getElementById('inputFields');
     const cancelBtn = document.getElementById('cancelBtn');
     const opponentDisplay = document.getElementById('opponentDisplay');
-    
+
     // Action buttons
     const passBtn = document.getElementById('passBtn');
     const rushBtn = document.getElementById('rushBtn');
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const undoBtn = document.getElementById('undoBtn');
     const changeQbBtn = document.getElementById('changeQbBtn');
     const endGameBtn = document.getElementById('endGameBtn').addEventListener("click", handleEndGame);
-    
+
     // Stats content divs
     const passStatsContent = document.getElementById('passStatsContent');
     const rushStatsContent = document.getElementById('rushStatsContent');
@@ -66,15 +66,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the game when the setup form is submitted
     setupForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Get values from the setup form
         const opponent = document.getElementById('opponent').value;
         const qbNumber = parseInt(document.getElementById('qbNumber').value);
-        
+
         // Store values in game data
         gameData.opponent = opponent;
         gameData.currentQB = qbNumber;
-        
+
         // Initialize QB stats
         gameData.qbs[qbNumber] = {
             number: qbNumber,
@@ -84,17 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
             tds: 0,
             ints: 0
         };
-        
+
         // Update UI
         opponentDisplay.textContent = opponent;
-        
+
         // CRITICAL FIX: Hide the setup modal using multiple methods to ensure it works
         setupModal.style.display = 'none';
         setupModal.style.cssText = "display: none !important;";
         setupModal.classList.add('hidden');
-        
+
         console.log(`Game started against ${opponent} with QB #${qbNumber}`);
-        
+
         // Initialize UI
         updateAllStats();
     });
@@ -103,116 +103,120 @@ document.addEventListener('DOMContentLoaded', function() {
     passBtn.addEventListener('click', function() {
         handlePassPlay();
     });
-    
+
     // Rush Button
     rushBtn.addEventListener('click', function() {
         handleRushPlay();
     });
-    
+
     // Kick Button
     kickBtn.addEventListener('click', function() {
         handleKickPlay();
     });
-    
+
     // Defense Button
     defenseBtn.addEventListener('click', function() {
         handleDefensePlay();
     });
-    
+
     // Flag Button
     flagBtn.addEventListener('click', function() {
         handleFlagPlay();
     });
-    
+
     // Undo Button
     undoBtn.addEventListener('click', function() {
         handleUndo();
     });
-    
-    
+
+    // Change QB Button
+    changeQbBtn.addEventListener('click', function() {
+        handleChangeQB();
+    });
+
     // End Game Button
     endGameBtn.addEventListener('click', function() {
         handleEndGame();
     });
-    
+
     // Cancel button for input modal
     cancelBtn.addEventListener('click', function() {
         closeInputModal();
     });
-    
+
     // Handle input form submission
     inputForm.addEventListener('submit', function(e) {
         e.preventDefault();
         // The specific handling depends on the current action
         // It will be defined in the respective handling functions
     });
-    
+
     // Function to show the input modal with custom fields
     function showInputModal(title, fields, callback) {
         inputTitle.textContent = title;
         inputFields.innerHTML = '';
-        
+
         // Create input fields
         fields.forEach(field => {
             if (field.type === 'radio') {
                 const fieldDiv = document.createElement('div');
                 fieldDiv.className = 'form-group';
-                
+
                 const label = document.createElement('label');
                 label.textContent = field.label;
                 fieldDiv.appendChild(label);
-                
+
                 const radioGroup = document.createElement('div');
                 radioGroup.className = 'radio-group';
-                
+
                 field.options.forEach(option => {
                     const radioOption = document.createElement('div');
                     radioOption.className = 'radio-option';
-                    
+
                     const input = document.createElement('input');
                     input.type = 'radio';
                     input.name = field.id;
                     input.id = `${field.id}_${option.value}`;
                     input.value = option.value;
-                    
+
                     const optionLabel = document.createElement('label');
                     optionLabel.textContent = option.text;
                     optionLabel.htmlFor = `${field.id}_${option.value}`;
-                    
+
                     radioOption.appendChild(input);
                     radioOption.appendChild(optionLabel);
                     radioGroup.appendChild(radioOption);
                 });
-                
+
                 fieldDiv.appendChild(radioGroup);
                 inputFields.appendChild(fieldDiv);
             } else {
                 const fieldDiv = document.createElement('div');
                 fieldDiv.className = 'form-group';
-                
+
                 const label = document.createElement('label');
                 label.textContent = field.label;
                 label.htmlFor = field.id;
                 fieldDiv.appendChild(label);
-                
+
                 const input = document.createElement('input');
                 input.type = field.type;
                 input.id = field.id;
                 input.name = field.id;
-                
+
                 if (field.min !== undefined) input.min = field.min;
                 if (field.max !== undefined) input.max = field.max;
                 if (field.required) input.required = true;
-                
+
                 fieldDiv.appendChild(input);
                 inputFields.appendChild(fieldDiv);
             }
         });
-        
+
         // Set up the form submission
         const submitHandler = function(e) {
             e.preventDefault();
-            
+
             // Collect form data
             const data = {};
             fields.forEach(field => {
@@ -224,27 +228,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     data[field.id] = input.value;
                 }
             });
-            
+
             // Close the modal
             closeInputModal();
-            
+
             // Remove the event listener to prevent memory leaks
             inputForm.removeEventListener('submit', submitHandler);
-            
+
             // Call the callback with the collected data
             callback(data);
         };
-        
+
         inputForm.addEventListener('submit', submitHandler);
-        
+
         // Show the modal
         inputModal.style.display = 'flex';
     }
-    
+
     function closeInputModal() {
         inputModal.style.display = 'none';
     }
-    
+
     // Handle Pass Play
     function handlePassPlay() {
         showInputModal('Pass Play', [
@@ -258,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         ], (data) => {
             const target = parseInt(data.target);
-            
+
             showInputModal('Pass Result', [
                 {
                     type: 'radio',
@@ -273,20 +277,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             ], (resultData) => {
                 const result = resultData.result;
-                
+
                 // Increment attempts
                 gameData.attempts++;
-                
+
                 // Update QB attempts
                 if (gameData.qbs[gameData.currentQB]) {
                     gameData.qbs[gameData.currentQB].attempts++;
                 }
-                
+
                 // Initialize receiver if not exists
                 if (!gameData.receivers[target]) {
                     gameData.receivers[target] = { qbs: {} };
                 }
-                
+
                 // Initialize receiver stats for current QB
                 if (!gameData.receivers[target].qbs[gameData.currentQB]) {
                     gameData.receivers[target].qbs[gameData.currentQB] = {
@@ -296,17 +300,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         tds: 0
                     };
                 }
-                
+
                 // Update targets
                 gameData.receivers[target].qbs[gameData.currentQB].targets++;
-                
+
                 if (result === 'interception') {
                     // Handle interception
                     gameData.ints++;
                     if (gameData.qbs[gameData.currentQB]) {
                         gameData.qbs[gameData.currentQB].ints++;
                     }
-                    
+
                     // Add to play history
                     gameData.playHistory.push({
                         type: 'pass',
@@ -314,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         result: 'interception',
                         yards: 0
                     });
-                    
+
                     updateAllStats();
                 } else if (result === 'incomplete') {
                     // Add to play history
@@ -324,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         result: 'incomplete',
                         yards: 0
                     });
-                    
+
                     updateAllStats();
                 } else {
                     // For complete or touchdown, ask for yards
@@ -338,23 +342,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     ], (yardsData) => {
                         const yards = parseInt(yardsData.yards);
-                        
+
                         // Update completions
                         gameData.completions++;
                         if (gameData.qbs[gameData.currentQB]) {
                             gameData.qbs[gameData.currentQB].completions++;
                         }
-                        
+
                         // Update catches for receiver
                         gameData.receivers[target].qbs[gameData.currentQB].catches++;
-                        
+
                         // Update yards
                         gameData.passYards += yards;
                         if (gameData.qbs[gameData.currentQB]) {
                             gameData.qbs[gameData.currentQB].yards += yards;
                         }
                         gameData.receivers[target].qbs[gameData.currentQB].yards += yards;
-                        
+
                         if (result === 'touchdown') {
                             // Update TDs
                             gameData.passTDs++;
@@ -362,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 gameData.qbs[gameData.currentQB].tds++;
                             }
                             gameData.receivers[target].qbs[gameData.currentQB].tds++;
-                            
+
                             // Add TD to play history
                             gameData.playHistory.push({
                                 type: 'pass',
@@ -370,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 result: 'touchdown',
                                 yards: yards
                             });
-                            
+
                             // Prompt for PAT
                             showInputModal('PAT Attempt', [
                                 {
@@ -388,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (patData.pat === 'good') {
                                     gameData.patMade++;
                                 }
-                                
+
                                 updateAllStats();
                             });
                         } else {
@@ -399,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 result: 'complete',
                                 yards: yards
                             });
-                            
+
                             updateAllStats();
                         }
                     });
@@ -407,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // Handle Rush Play
     function handleRushPlay() {
         showInputModal('Rush Play', [
@@ -428,11 +432,11 @@ document.addEventListener('DOMContentLoaded', function() {
         ], (data) => {
             const rusher = parseInt(data.rusher);
             const yards = parseInt(data.yards);
-            
+
             // Update rush stats
             gameData.rushes++;
             gameData.rushYards += yards;
-            
+
             // Initialize rusher if not exists
             if (!gameData.rushers[rusher]) {
                 gameData.rushers[rusher] = {
@@ -441,16 +445,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     tds: 0
                 };
             }
-            
+
             // Update rusher stats
             gameData.rushers[rusher].carries++;
             gameData.rushers[rusher].yards += yards;
-            
+
             // Check for sack
             if (rusher === gameData.currentQB && yards < 0) {
                 gameData.sacks++;
             }
-            
+
             // Ask if it was a touchdown
             showInputModal('Touchdown?', [
                 {
@@ -470,12 +474,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     yards: yards,
                     touchdown: (tdData.touchdown === 'yes')
                 };
-                
+
                 if (tdData.touchdown === 'yes') {
                     // Update TD stats
                     gameData.rushTDs++;
                     gameData.rushers[rusher].tds++;
-                    
+
                     // Prompt for PAT
                     showInputModal('PAT Attempt', [
                         {
@@ -493,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (patData.pat === 'good') {
                             gameData.patMade++;
                         }
-                        
+
                         gameData.playHistory.push(playData);
                         updateAllStats();
                     });
@@ -504,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // Handle Kick Play
     function handleKickPlay() {
         showInputModal('Kick Type', [
@@ -519,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         ], (data) => {
             const type = data.type;
-            
+
             if (type === 'fg') {
                 // Field Goal attempt
                 showInputModal('Field Goal Distance', [
@@ -532,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 ], (yardsData) => {
                     const yards = parseInt(yardsData.yards);
-                    
+
                     showInputModal('Field Goal Result', [
                         {
                             type: 'radio',
@@ -550,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             gameData.fgMade++;
                             gameData.fgYards.push(yards);
                         }
-                        
+
                         // Add to play history
                         gameData.playHistory.push({
                             type: 'kick',
@@ -558,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             yards: yards,
                             result: resultData.result
                         });
-                        
+
                         updateAllStats();
                     });
                 });
@@ -580,20 +584,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (resultData.result === 'good') {
                         gameData.patMade++;
                     }
-                    
+
                     // Add to play history
                     gameData.playHistory.push({
                         type: 'kick',
                         kickType: 'pat',
                         result: resultData.result
                     });
-                    
+
                     updateAllStats();
                 });
             }
         });
     }
-    
+
     // Handle Defense Play
     function handleDefensePlay() {
         showInputModal('Defensive Play', [
@@ -619,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ], (data) => {
             const player = parseInt(data.player);
             const playType = data.playType;
-            
+
             // Initialize player if not exists
             if (!gameData.defenseStats.players[player]) {
                 gameData.defenseStats.players[player] = {
@@ -629,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     forcedFumbles: 0
                 };
             }
-            
+
             // Update stats based on play type
             switch (playType) {
                 case 'tackle':
@@ -649,25 +653,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     gameData.defenseStats.players[player].forcedFumbles++;
                     break;
             }
-            
+
             // Add to play history
             gameData.playHistory.push({
                 type: 'defense',
                 player: player,
                 playType: playType
             });
-            
+
             updateAllStats();
         });
     }
-    
+
     // Handle Flag Play
     function handleFlagPlay() {
         // Undo last play first
         if (gameData.playHistory.length > 0) {
             undoLastPlay();
         }
-        
+
         // Then ask for penalty details
         showInputModal('Penalty', [
             {
@@ -697,13 +701,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 yards: parseInt(data.yards),
                 player: parseInt(data.player)
             };
-            
+
             gameData.penalties.push(penalty);
-            
+
             updateAllStats();
         });
     }
-    
+
     // Handle Undo
     function handleUndo() {
         if (gameData.playHistory.length > 0) {
@@ -713,12 +717,12 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('No plays to undo');
         }
     }
-    
+
     function undoLastPlay() {
         const lastPlay = gameData.playHistory.pop();
-        
+
         if (!lastPlay) return;
-        
+
         switch (lastPlay.type) {
             case 'pass':
                 undoPassPlay(lastPlay);
@@ -734,22 +738,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
     }
-    
+
     function undoPassPlay(play) {
         // Decrement attempts
         gameData.attempts--;
-        
+
         // Update QB attempts
         if (gameData.qbs[gameData.currentQB]) {
             gameData.qbs[gameData.currentQB].attempts--;
         }
-        
+
         // Update receiver targets
         if (gameData.receivers[play.target] && 
             gameData.receivers[play.target].qbs[gameData.currentQB]) {
             gameData.receivers[play.target].qbs[gameData.currentQB].targets--;
         }
-        
+
         if (play.result === 'interception') {
             // Handle interception
             gameData.ints--;
@@ -762,31 +766,31 @@ document.addEventListener('DOMContentLoaded', function() {
             if (gameData.qbs[gameData.currentQB]) {
                 gameData.qbs[gameData.currentQB].completions--;
             }
-            
+
             // Update catches for receiver
             if (gameData.receivers[play.target] && 
                 gameData.receivers[play.target].qbs[gameData.currentQB]) {
                 gameData.receivers[play.target].qbs[gameData.currentQB].catches--;
             }
-            
+
             // Update yards
             gameData.passYards -= play.yards;
             if (gameData.qbs[gameData.currentQB]) {
                 gameData.qbs[gameData.currentQB].yards -= play.yards;
             }
-            
+
             if (gameData.receivers[play.target] && 
                 gameData.receivers[play.target].qbs[gameData.currentQB]) {
                 gameData.receivers[play.target].qbs[gameData.currentQB].yards -= play.yards;
             }
-            
+
             if (play.result === 'touchdown') {
                 // Update TDs
                 gameData.passTDs--;
                 if (gameData.qbs[gameData.currentQB]) {
                     gameData.qbs[gameData.currentQB].tds--;
                 }
-                
+
                 if (gameData.receivers[play.target] && 
                     gameData.receivers[play.target].qbs[gameData.currentQB]) {
                     gameData.receivers[play.target].qbs[gameData.currentQB].tds--;
@@ -794,23 +798,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     function undoRushPlay(play) {
         // Update rush stats
         gameData.rushes--;
         gameData.rushYards -= play.yards;
-        
+
         // Update rusher stats
         if (gameData.rushers[play.rusher]) {
             gameData.rushers[play.rusher].carries--;
             gameData.rushers[play.rusher].yards -= play.yards;
         }
-        
+
         // Check for sack
         if (play.rusher === gameData.currentQB && play.yards < 0) {
             gameData.sacks--;
         }
-        
+
         // Update TD stats if it was a touchdown
         if (play.touchdown) {
             gameData.rushTDs--;
@@ -819,7 +823,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     function undoKickPlay(play) {
         if (play.kickType === 'fg') {
             // Update FG stats
@@ -840,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     function undoDefensePlay(play) {
         // Update stats based on play type
         switch (play.playType) {
@@ -870,7 +874,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
     }
-    
+
     // Handle Change QB
     function handleChangeQB() {
         showInputModal('Change Quarterback', [
@@ -884,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         ], (data) => {
             const qbNumber = parseInt(data.qbNumber);
-            
+
             // Initialize QB stats if not exists
             if (!gameData.qbs[qbNumber]) {
                 gameData.qbs[qbNumber] = {
@@ -896,14 +900,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     ints: 0
                 };
             }
-            
+
             // Update current QB
             gameData.currentQB = qbNumber;
-            
+
             updateAllStats();
         });
     }
-    
+
     // Handle End Game
     function handleEndGame() {
         // Generate and download final stats
@@ -911,16 +915,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const statsText = generateFinalStats();
         downloadStats(statsText);
     }
-    
+
     function generateFinalStats() {
         let stats = `Final Stats vs ${gameData.opponent}\n\n`;
-        
+
         // Pass stats
         stats += `PASSING:\n`;
         for (const qbNum in gameData.qbs) {
             const qb = gameData.qbs[qbNum];
             stats += `QB #${qbNum}: ${qb.completions}/${qb.attempts}, ${qb.yards} yards, ${qb.tds} TD, ${qb.ints} INT\n`;
-            
+
             // Receiver stats for this QB
             for (const receiverNum in gameData.receivers) {
                 const receiver = gameData.receivers[receiverNum];
@@ -931,23 +935,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             stats += '\n';
         }
-        
+
         // Rush stats
         stats += `RUSHING:\n`;
         stats += `Team: ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD\n`;
         for (const rusherNum in gameData.rushers) {
             const rusher = gameData.rushers[rusherNum];
             let rusherStats = `#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD`;
-            
+
             // Add sack info if this is the QB
             if (rusherNum == gameData.currentQB) {
                 rusherStats += ` (sacked ${gameData.sacks} times)`;
             }
-            
+
             stats += `${rusherStats}\n`;
         }
         stats += '\n';
-        
+
         // Kicking stats
         stats += `KICKING:\n`;
         stats += `PATs: ${gameData.patMade}/${gameData.patAttempts}\n`;
@@ -956,27 +960,27 @@ document.addEventListener('DOMContentLoaded', function() {
             stats += `Good from: ${gameData.fgYards.join(', ')} yards\n`;
         }
         stats += '\n';
-        
+
         // Defense stats
         stats += `DEFENSE:\n`;
         const defense = gameData.defenseStats;
         stats += `Team: ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF\n`;
-        
+
         for (const playerNum in defense.players) {
             const player = defense.players[playerNum];
             let statItems = [];
-            
+
             if (player.tackles > 0) statItems.push(`${player.tackles} TKL`);
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
-            
+
             if (statItems.length > 0) {
                 stats += `#${playerNum}: ${statItems.join(', ')}\n`;
             }
         }
         stats += '\n';
-        
+
         // Penalties
         stats += `PENALTIES:\n`;
         if (gameData.penalties.length === 0) {
@@ -986,10 +990,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 stats += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
             });
         }
-        
+
         return stats;
     }
-    
+
     function downloadStats(text) {
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -1001,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
-    
+
     // Update functions for the stats windows
     function updateAllStats() {
         updatePassStats();
@@ -1010,15 +1014,15 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDefenseStats();
         updatePenaltyStats();
     }
-    
+
     function updatePassStats() {
         let html = '';
-        
+
         // For each quarterback in the game
         for (const qbNum in gameData.qbs) {
             const qb = gameData.qbs[qbNum];
             html += `<div><strong>QB #${qbNum}:</strong> ${qb.completions}/${qb.attempts}, ${qb.yards} yards, ${qb.tds} TD, ${qb.ints} INT</div>`;
-            
+
             // Add receiver stats for this QB
             html += '<div class="receiver-stats" style="margin-left: 15px; margin-top: 5px; margin-bottom: 10px;">';
             for (const receiverNum in gameData.receivers) {
@@ -1030,77 +1034,74 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             html += '</div>';
         }
-        
+
         passStatsContent.innerHTML = html || 'No passing stats recorded yet';
     }
-    
+
     function updateRushStats() {
         let html = `<div><strong>Team:</strong> ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD</div>`;
-        
+
         for (const rusherNum in gameData.rushers) {
             const rusher = gameData.rushers[rusherNum];
             let rusherLine = `<div>#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD`;
-            
+
             // Add sack info if this is the QB
             if (rusherNum == gameData.currentQB) {
                 rusherLine += ` (sacked ${gameData.sacks} times)`;
             }
-            
+
             rusherLine += '</div>';
             html += rusherLine;
         }
-        
+
         rushStatsContent.innerHTML = html;
     }
-    
+
     function updateKickStats() {
         let html = `<div>PATs: ${gameData.patMade}/${gameData.patAttempts}</div>`;
         html += `<div>FGs: ${gameData.fgMade}/${gameData.fgAttempts}</div>`;
-        
+
         if (gameData.fgYards.length > 0) {
             html += `<div>Good from: ${gameData.fgYards.join(', ')} yards</div>`;
         }
-        
+
         kickStatsContent.innerHTML = html;
     }
-    
+
     function updateDefenseStats() {
         const defense = gameData.defenseStats;
-        
+
         let html = `<div><strong>Team:</strong> ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF</div>`;
-        
+
         // Individual player stats
         for (const playerNum in defense.players) {
             const player = defense.players[playerNum];
             let statItems = [];
-            
+
             if (player.tackles > 0) statItems.push(`${player.tackles} TKL`);
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
-            
+
             if (statItems.length > 0) {
                 html += `<div>#${playerNum}: ${statItems.join(', ')}</div>`;
             }
         }
-        
+
         defenseStatsContent.innerHTML = html;
     }
-    
+
     function updatePenaltyStats() {
         if (gameData.penalties.length === 0) {
             penaltyStatsContent.innerHTML = 'No penalties recorded';
             return;
         }
-        
+
         let html = '';
         gameData.penalties.forEach(penalty => {
             html += `<div>#${penalty.player}: ${penalty.yards} yards - ${penalty.type}</div>`;
         });
-        
-        penaltyStatsContent.innerHTML = html;
-    }
-});
+
         penaltyStatsContent.innerHTML = html;
     }
 });
