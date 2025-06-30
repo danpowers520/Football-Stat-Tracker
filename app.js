@@ -135,9 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Cancel button for input modal
-    cancelBtn.addEventListener('click', function() {
-        closeInputModal();
-    });
+    cancelBtn.addEventListener('click',inputModal.style.display = 'none');
 
     // Handle input form submission
     inputForm.addEventListener('submit', function(e) {
