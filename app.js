@@ -43,8 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputForm = document.getElementById('inputForm');
     const inputTitle = document.getElementById('inputTitle');
     const inputFields = document.getElementById('inputFields');
-    const cancelBtn = document.getElementById('cancelBtn').addEventListener('click', function() {
-        closeInputModal();
+    const cancelBtn = document.getElementById('cancelBtn');
     const opponentDisplay = document.getElementById('opponentDisplay');
 
     // Action buttons
