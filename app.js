@@ -136,11 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Cancel button for input modal
-    cancelBtn.addEventListener('click', function(e) {
-    e.preventDefault(); // Prevent any form submission
-    e.stopPropagation(); // Stop event bubbling
-    console.log('Cancel button clicked'); // Debug log
-    closeInputModal();
+    cancelBtn.addEventListener('click', function() {
+        closeInputModal();
 });
 
     });
