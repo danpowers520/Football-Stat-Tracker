@@ -138,8 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cancel button for input modal
     cancelBtn.addEventListener('click', function() {
         closeInputModal();
-});
-
     });
     
     // Handle input form submission
@@ -1100,6 +1098,9 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `<div>#${penalty.player}: ${penalty.yards} yards - ${penalty.type}</div>`;
         });
         
+        penaltyStatsContent.innerHTML = html;
+    }
+});
         penaltyStatsContent.innerHTML = html;
     }
 });
