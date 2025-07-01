@@ -243,71 +243,171 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeInputModal() {
         inputModal.style.display = 'none';
+        
     }
 
     // Handle Pass Play
-function handlePassPlay() {
-    showInputModal('Pass Play', [
-        {
-            type: 'number',
-            label: 'Target Player Number:',
-            id: 'target',
-            min: 1,
-            max: 99
-        }
-    ], (data) => {
-        const target = parseInt(data.target);
-        // After getting target, prompt for pass result
-        showInputModal('Pass Result', [
+    function handlePassPlay() {
+        showInputModal('Pass Play', [
             {
-                type: 'radio',
-                label: 'Result:',
-                id: 'result',
-                options: [
-                    { value: 'complete', text: 'Complete' },
-                    { value: 'incomplete', text: 'Incomplete' },
-                    { value: 'touchdown', text: 'Touchdown' },
-                    { value: 'interception', text: 'Interception' }
-                ]
+                type: 'number',
+                label: 'Target Player Number:',
+                id: 'target',
+                min: 1,
+                max: 99,
+                required: true
             }
-        ], (resultData) => {
-            const result = resultData.result;
-            if (result === 'complete' || result === 'touchdown') {
-                // Prompt for yards if complete or touchdown
-                showInputModal('Yards Gained', [
-                    {
-                        type: 'number',
-                        label: 'Yards:',
-                        id: 'yards',
-                        min: 0
+        ], (data) => {
+            const target = parseInt(data.target);
+
+            showInputModal('Pass Result', [
+                {
+                    type: 'radio',
+                    label: 'Result:',
+                    id: 'result',
+                    options: [
+                        { value: 'complete', text: 'Complete' },
+                        { value: 'incomplete', text: 'Incomplete' },
+                        { value: 'touchdown', text: 'Touchdown' },
+                        { value: 'interception', text: 'Interception' }
+                    ]
+                }
+            ], (resultData) => {
+                const result = resultData.result;
+
+                // Increment attempts
+                gameData.attempts++;
+
+                // Update QB attempts
+                if (gameData.qbs[gameData.currentQB]) {
+                    gameData.qbs[gameData.currentQB].attempts++;
+                }
+
+                // Initialize receiver if not exists
+                if (!gameData.receivers[target]) {
+                    gameData.receivers[target] = { qbs: {} };
+                }
+
+                // Initialize receiver stats for current QB
+                if (!gameData.receivers[target].qbs[gameData.currentQB]) {
+                    gameData.receivers[target].qbs[gameData.currentQB] = {
+                        catches: 0,
+                        targets: 0,
+                        yards: 0,
+                        tds: 0
+                    };
+                }
+
+                // Update targets
+                gameData.receivers[target].qbs[gameData.currentQB].targets++;
+
+                if (result === 'interception') {
+                    // Handle interception
+                    gameData.ints++;
+                    if (gameData.qbs[gameData.currentQB]) {
+                        gameData.qbs[gameData.currentQB].ints++;
                     }
-                ], (yardsData) => {
-                    const yards = parseInt(yardsData.yards) || 0;
-                    if (result === 'touchdown') {
-                        // Prompt for PAT attempt
-                        showInputModal('PAT Attempt', [
-                            {
-                                type: 'radio',
-                                label: 'PAT Result:',
-                                id: 'pat',
-                                options: [
-                                    { value: 'good', text: 'Good' },
-                                    { value: 'missed', text: 'Missed' }
-                                ]
+
+                    // Add to play history
+                    gameData.playHistory.push({
+                        type: 'pass',
+                        target: target,
+                        result: 'interception',
+                        yards: 0
+                    });
+
+                    updateAllStats();
+                } else if (result === 'incomplete') {
+                    // Add to play history
+                    gameData.playHistory.push({
+                        type: 'pass',
+                        target: target,
+                        result: 'incomplete',
+                        yards: 0
+                    });
+
+                    updateAllStats();
+                } else {
+                    // For complete or touchdown, ask for yards
+                    showInputModal('Yards Gained', [
+                        {
+                            type: 'number',
+                            label: 'Yards:',
+                            id: 'yards',
+                            min: 0,
+                            required: true
+                        }
+                    ], (yardsData) => {
+                        const yards = parseInt(yardsData.yards);
+
+                        // Update completions
+                        gameData.completions++;
+                        if (gameData.qbs[gameData.currentQB]) {
+                            gameData.qbs[gameData.currentQB].completions++;
+                        }
+
+                        // Update catches for receiver
+                        gameData.receivers[target].qbs[gameData.currentQB].catches++;
+
+                        // Update yards
+                        gameData.passYards += yards;
+                        if (gameData.qbs[gameData.currentQB]) {
+                            gameData.qbs[gameData.currentQB].yards += yards;
+                        }
+                        gameData.receivers[target].qbs[gameData.currentQB].yards += yards;
+
+                        if (result === 'touchdown') {
+                            // Update TDs
+                            gameData.passTDs++;
+                            if (gameData.qbs[gameData.currentQB]) {
+                                gameData.qbs[gameData.currentQB].tds++;
                             }
-                        ], (patData) => {
-                            processPassPlay(target, result, yards, patData.pat);
-                        });
-                    } else {
-                        processPassPlay(target, result, yards);
-                    }
-                });
-            } else {
-                processPassPlay(target, result, 0);
-            }
+                            gameData.receivers[target].qbs[gameData.currentQB].tds++;
+
+                            // Add TD to play history
+                            gameData.playHistory.push({
+                                type: 'pass',
+                                target: target,
+                                result: 'touchdown',
+                                yards: yards
+                            });
+
+                            // Prompt for PAT
+                            showInputModal('PAT Attempt', [
+                                {
+                                    type: 'radio',
+                                    label: 'PAT Result:',
+                                    id: 'pat',
+                                    options: [
+                                        { value: 'good', text: 'Good' },
+                                        { value: 'missed', text: 'Missed' }
+                                    ]
+                                }
+                            ], (patData) => {
+                                // Update PAT stats
+                                gameData.patAttempts++;
+                                if (patData.pat === 'good') {
+                                    gameData.patMade++;
+                                }
+
+                                updateAllStats();
+                            });
+                        } else {
+                            // Add complete pass to play history
+                            gameData.playHistory.push({
+                                type: 'pass',
+                                target: target,
+                                result: 'complete',
+                                yards: yards
+                            });
+
+                            updateAllStats();
+                        }
+                    });
+                }
+            });
         });
-    });
-}
+    }
 
     // Handle Rush Play
     function handleRushPlay() {
