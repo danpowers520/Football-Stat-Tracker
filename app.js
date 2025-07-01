@@ -243,7 +243,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeInputModal() {
         inputModal.style.display = 'none';
-        
     }
 
     // Handle Pass Play
