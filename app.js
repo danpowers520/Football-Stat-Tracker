@@ -242,7 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function closeInputModal() {
-        inputModal.setTimeout(inputModal, 1000);
+        inputModal.style.display = 'none';
+        inputModal.style.display = 'flex';
     }
 
     // Handle Pass Play
