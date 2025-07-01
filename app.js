@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputForm = document.getElementById('inputForm');
     const inputTitle = document.getElementById('inputTitle');
     const inputFields = document.getElementById('inputFields');
-    const cancelBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal);
+    const cancleBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal);
 
     const opponentDisplay = document.getElementById('opponentDisplay');
 
@@ -135,6 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
         handleEndGame();
     });
 
+    // Cancel button for input modal
+    cancelBtn.addEventListener('cancel',function() {
+        closeInputModal();
+    });
 
     // Handle input form submission
     inputForm.addEventListener('submit', function(e) {
@@ -239,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeInputModal() {
         inputModal.style.display = 'none';
-
+        
     }
 
     // Handle Pass Play
