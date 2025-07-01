@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function closeInputModal() {
-        inputForm.style.display = 'none';
+        inputModal.setTimeout(inputModal, 1000);
     }
 
     // Handle Pass Play
