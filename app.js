@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputForm = document.getElementById('inputForm');
     const inputTitle = document.getElementById('inputTitle');
     const inputFields = document.getElementById('inputFields');
-    const cancleBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal);
+    const cancleBtn = document.getElementById('cancelBtn').addEventListener('click', inputModal.pop);
 
     const opponentDisplay = document.getElementById('opponentDisplay');
 
