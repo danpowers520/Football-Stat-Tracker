@@ -43,12 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputForm = document.getElementById('inputForm');
     const inputTitle = document.getElementById('inputTitle');
     const inputFields = document.getElementById('inputFields');
-    const cancleBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal);
+    const cancelBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal);
 
     const opponentDisplay = document.getElementById('opponentDisplay');
 
     // Action buttons
-    const passBtn = document.getElementById('passBtn');
+    const passBtn = document.getElementById('passBtn').addEventListener('click', openInputModal);
     const rushBtn = document.getElementById('rushBtn');
     const kickBtn = document.getElementById('kickBtn');
     const defenseBtn = document.getElementById('defenseBtn');
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Cancel button for input modal
-    cancelBtn.addEventListener('cancel',function() {
+    cancelBtn.addEventListener('click',function() {
         closeInputModal();
     });
 
@@ -243,6 +243,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeInputModal() {
         inputModal.style.display = 'none';
+
+    }
+
+    function openInputModal() {
+        inputModal.style.display = "flex"
         
     }
 
