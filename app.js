@@ -43,12 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputForm = document.getElementById('inputForm');
     const inputTitle = document.getElementById('inputTitle');
     const inputFields = document.getElementById('inputFields');
-    const cancelBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal);
+    const cancelBtn = document.getElementById('cancelBtn').addEventListener('click', closeInputModal).addEventListner('mousemove', showInputModal);
 
     const opponentDisplay = document.getElementById('opponentDisplay');
 
     // Action buttons
-    const passBtn = document.getElementById('passBtn').addEventListener('click', openInputModal);
+    const passBtn = document.getElementById('passBtn');
     const rushBtn = document.getElementById('rushBtn');
     const kickBtn = document.getElementById('kickBtn');
     const defenseBtn = document.getElementById('defenseBtn');
@@ -135,10 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
         handleEndGame();
     });
 
-    // Cancel button for input modal
-    cancelBtn.addEventListener('click',function() {
-        closeInputModal();
-    });
 
     // Handle input form submission
     inputForm.addEventListener('submit', function(e) {
@@ -244,11 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeInputModal() {
         inputModal.style.display = 'none';
 
-    }
-
-    function openInputModal() {
-        inputModal.style.display = "flex"
-        
     }
 
     // Handle Pass Play
