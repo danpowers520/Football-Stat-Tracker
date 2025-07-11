@@ -1081,7 +1081,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateDefenseStats() {
         const defense = gameData.defenseStats;
 
-        let html = `<div><strong>Team:</strong> ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF</div>`;
+        let html = `<div><strong>Team:</strong> ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF, ${defense.tfl} TFLs</div>`;
 
         // Individual player stats
         for (const playerNum in defense.players) {
