@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
             sacks: 0,
             interceptions: 0,
             forcedFumbles: 0,
-            tfl: 0,
             players: {}
         },
         qbs: {}
@@ -224,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const input = document.getElementById(field.id);
                     data[field.id] = input.value;
                 }
+            });
 
             // Close the modal
             closeInputModal();
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Call the callback with the collected data
             callback(data);
-        });
+        };
 
         inputForm.addEventListener('submit', submitHandler);
 
@@ -613,8 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { value: 'tackle', text: 'Tackle' },
                     { value: 'sack', text: 'Sack' },
                     { value: 'interception', text: 'Interception' },
-                    { value: 'fumble', text: 'Forced Fumble' },
-                    { value: 'tfl', text: 'Tackle for Loss' }
+                    { value: 'fumble', text: 'Forced Fumble' }
                 ]
             }
         ], (data) => {
@@ -627,8 +626,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tackles: 0,
                     sacks: 0,
                     interceptions: 0,
-                    forcedFumbles: 0,
-                    tfl: 0
+                    forcedFumbles: 0
                 };
             }
 
@@ -649,10 +647,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'fumble':
                     gameData.defenseStats.forcedFumbles++;
                     gameData.defenseStats.players[player].forcedFumbles++;
-                    break;
-                case 'tfl':
-                    gameData.defenseStats.tfl++;
-                    gameData.defenseStats.players[player].tfl++;
                     break;
             }
 
@@ -874,10 +868,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     gameData.defenseStats.players[play.player].forcedFumbles--;
                 }
                 break;
-            case 'tfl':
-                gameData.defenseStats.tfl--;
-                if (gameData.defenseStats.players[play.player]) {
-                    gameData.defenseStats.players[play.player].tfl--;
         }
     }
 
@@ -980,7 +970,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
-            if (player.tfl > 0) statItems.push(`${player.tfl} TFL's`);
 
             if (statItems.length > 0) {
                 stats += `#${playerNum}: ${statItems.join(', ')}\n`;
