@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Call the callback with the collected data
             callback(data);
-        };
+        });
 
         inputForm.addEventListener('submit', submitHandler);
 
