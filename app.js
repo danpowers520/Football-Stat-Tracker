@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sacks: 0,
             interceptions: 0,
             forcedFumbles: 0,
+            tfl: 0,
             players: {}
         },
         qbs: {}
@@ -613,7 +614,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     { value: 'tackle', text: 'Tackle' },
                     { value: 'sack', text: 'Sack' },
                     { value: 'interception', text: 'Interception' },
-                    { value: 'fumble', text: 'Forced Fumble' }
+                    { value: 'fumble', text: 'Forced Fumble' },
+                    { value: 'tfl', text: 'TFL' }
                 ]
             }
         ], (data) => {
@@ -626,7 +628,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     tackles: 0,
                     sacks: 0,
                     interceptions: 0,
-                    forcedFumbles: 0
+                    forcedFumbles: 0,
+                    tfl: 0
                 };
             }
 
@@ -647,6 +650,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'fumble':
                     gameData.defenseStats.forcedFumbles++;
                     gameData.defenseStats.players[player].forcedFumbles++;
+                    break;
+                case 'tfl':
+                    gameData.defenseStats.tfl++;
+                    gameData.defenseStats.players[player].tfl++;
                     break;
             }
 
@@ -868,6 +875,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     gameData.defenseStats.players[play.player].forcedFumbles--;
                 }
                 break;
+            case 'tfl':
+                gameData.defenseStats.tfl--;
+                if (gameData.defenseStats.players[play.player]) {
+                    gameData.defenseStats.players[play.player].tfl--;
+                }
+                break;
         }
     }
 
@@ -960,7 +973,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Defense stats
         stats += `DEFENSE:\n`;
         const defense = gameData.defenseStats;
-        stats += `Team: ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF\n`;
+        stats += `Team: ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF, ${defense.tfl} TFLs\n`;
 
         for (const playerNum in defense.players) {
             const player = defense.players[playerNum];
@@ -970,6 +983,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
+            if (player.tfl > 0) statItems.push(`${player.tfl} TFLs`);
 
             if (statItems.length > 0) {
                 stats += `#${playerNum}: ${statItems.join(', ')}\n`;
@@ -1078,6 +1092,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
+            if (player.tfl > 0) statItems.push(`${player.tfl} TFLs`);
 
             if (statItems.length > 0) {
                 html += `<div>#${playerNum}: ${statItems.join(', ')}</div>`;
