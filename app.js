@@ -614,6 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { value: 'sack', text: 'Sack' },
                     { value: 'interception', text: 'Interception' },
                     { value: 'fumble', text: 'Forced Fumble' }
+                    { value: 'tfl', text: 'Tackle for Loss' }
                 ]
             }
         ], (data) => {
@@ -626,7 +627,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     tackles: 0,
                     sacks: 0,
                     interceptions: 0,
-                    forcedFumbles: 0
+                    forcedFumbles: 0,
+                    tfl: 0
                 };
             }
 
@@ -648,6 +650,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     gameData.defenseStats.forcedFumbles++;
                     gameData.defenseStats.players[player].forcedFumbles++;
                     break;
+                case 'tfl':
+                    gameData.defenseStats.tfl++;
+                    gameData.defenseStats.players[player].tfl++;
             }
 
             // Add to play history
