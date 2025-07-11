@@ -224,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const input = document.getElementById(field.id);
                     data[field.id] = input.value;
                 }
-            });
 
             // Close the modal
             closeInputModal();
