@@ -1112,4 +1112,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
         penaltyStatsContent.innerHTML = html;
     }
-});
+};
