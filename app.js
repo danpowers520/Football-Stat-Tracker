@@ -693,11 +693,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 required: true
             },
             {
-                type: 'number',
-                label: 'Player Number:',
+                type: 'text',
+                label: 'Player Number (S for sideline, C for coach, U for Unknown):',
                 id: 'player',
-                min: 1,
-                max: 99,
                 required: true
             }
         ], (data) => {
