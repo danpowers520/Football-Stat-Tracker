@@ -703,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const penalty = {
                 type: data.type,
                 yards: parseInt(data.yards),
-                player: parseInt(data.player)
+                player: data.player
             };
 
             gameData.penalties.push(penalty);
