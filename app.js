@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Other data
         penalties: [],
         playHistory: [],
+        playByPlayNotes: [],
         receivers: {},
         rushers: {},
         defenseStats: {
@@ -58,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const defenseBtn = document.getElementById('defenseBtn');
     const flagBtn = document.getElementById('flagBtn');
     const undoBtn = document.getElementById('undoBtn');
+    const addNoteBtn = document.getElementById('addNoteBtn');
     const endGameBtn = document.getElementById('endGameBtn').addEventListener("click", handleEndGame);
 
     // Stats content divs
@@ -133,6 +135,13 @@ document.addEventListener('DOMContentLoaded', function() {
         handleUndo();
     });
 
+    addNoteBtn.addEventListener('click', function() {
+    showInputModal('Add Note', [
+        {type: 'text', label: 'Note:', id: 'note', required: true}
+    ], (data) => {
+        gameData.playByPlayNotes.push(data.note);
+        updatePlayByPlayNotesWindow();
+    });
 
     // End Game Button
     endGameBtn.addEventListener('click', function() {
@@ -317,6 +326,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         target: target,
                         result: 'interception',
                         yards: 0
+                        gameData.playHistory.push(playObj);
+                        gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                        updatePlayByPlayNotesWindow();
+
                     });
 
                     updateAllStats();
@@ -327,6 +340,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         target: target,
                         result: 'incomplete',
                         yards: 0
+                        gameData.playHistory.push(playObj);
+                        gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                        updatePlayByPlayNotesWindow();
                     });
 
                     updateAllStats();
@@ -373,6 +389,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 target: target,
                                 result: 'touchdown',
                                 yards: yards
+                                gameData.playHistory.push(playObj);
+                                gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                                updatePlayByPlayNotesWindow();
                             });
 
                             // Prompt for PAT
@@ -402,6 +421,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 target: target,
                                 result: 'complete',
                                 yards: yards
+                                gameData.playHistory.push(playObj);
+                                gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                                updatePlayByPlayNotesWindow();
                             });
 
                             updateAllStats();
@@ -473,6 +495,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     rusher: rusher,
                     yards: yards,
                     touchdown: (tdData.touchdown === 'yes')
+                    gameData.playHistory.push(playObj);
+                    gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                    updatePlayByPlayNotesWindow();
                 };
 
                 if (tdData.touchdown === 'yes') {
@@ -561,6 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             kickType: 'fg',
                             yards: yards,
                             result: resultData.result
+                            gameData.playHistory.push(playObj);
+                            gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                            updatePlayByPlayNotesWindow();
                         });
 
                         updateAllStats();
@@ -590,6 +618,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: 'kick',
                         kickType: 'pat',
                         result: resultData.result
+                        gameData.playHistory.push(playObj);
+                        gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                        updatePlayByPlayNotesWindow();
                     });
 
                     updateAllStats();
@@ -665,10 +696,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: 'defense',
                 player: player,
                 playType: playType
+                gameData.playHistory.push(playObj);
+                gameData.playByPlayNotes.push(getPlayDescription(playObj));
+                updatePlayByPlayNotesWindow();
             });
 
             updateAllStats();
         });
+    }
+    function getPlayDescription(play) {
+        if (play.type === 'pass') {
+            if (play.result === 'touchdown') {
+                return `${play.yards} yard pass complete to #${play.target}, TD`;
+            } else if (play.result === 'complete') {
+                return `${play.yards} yard pass complete to #${play.target}`;
+            } else if (play.result === 'incomplete') {
+                return `Pass to #${play.target} incomplete`;
+            } else if (play.result === 'interception') {
+                return `Pass to #${play.target} intercepted`;
+            }
+        } else if (play.type === 'rush') {
+            if (play.touchdown) {
+                return `#${play.rusher} rushed for ${play.yards} yards, TD`;
+            }
+            return `#${play.rusher} rushed for ${play.yards} yards`;
+        } else if (play.type === 'kick') {
+            if (play.kickType === 'fg') {
+                return `Field goal from ${play.yards} yards: ${play.result === 'good' ? 'Good' : 'Missed'}`;
+            } else if (play.kickType === 'pat') {
+                return `PAT attempt: ${play.result === 'good' ? 'Good' : 'Missed'}`;
+            }
+        } else if (play.type === 'defense') {
+            switch (play.playType) {
+                case 'tackle': return `#${play.player} made a tackle`;
+                case 'sack': return `#${play.player} sacked QB`;
+                case 'interception': return `#${play.player} interception`;
+                case 'fumble': return `#${play.player} forced fumble`;
+                case 'tfl': return `#${play.player} tackle for loss`;
+            }
+        } else if (play.type === 'note') {
+            return play.note;
+        }
+        return '';
     }
 
     // Handle Flag Play
@@ -709,6 +778,16 @@ document.addEventListener('DOMContentLoaded', function() {
             gameData.penalties.push(penalty);
 
             updateAllStats();
+        });
+    }
+
+    function updatePlayByPlayNotesWindow() {
+        const list = document.getElementById('playByPlayNotesList');
+        list.innerHTML = '';
+        gameData.playByPlayNotes.forEach((item, idx) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            list.appendChild(li);
         });
     }
 
