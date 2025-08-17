@@ -998,17 +998,18 @@ document.addEventListener('DOMContentLoaded', function() {
             stats += `No penalties recorded\n`;
         } else {
             gameData.penalties.forEach(penalty => {
-                stats += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`
-                    if (penalty.player === 'C'){
-                        stats += `Coach: ${penalty.yards} yards - ${penalty.type}\n`;
-                    }
-                    if (penalty.player === 'S'){
-                        stats += `Sideline: ${penalty.yards} yards - ${penalty.type}\n`;
-                    }
-                    if (penalty.player === 'U'){
-                        stats += `Unknown Player: ${penalty.yards} yards - ${penalty.type}\n`;
-                    }
+                stats += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
+                if (penalty.player === 'C') {
+                    stats += `Coach: ${penalty.yards} yards - ${penalty.type}\n`;
+                }
+                if (penalty.player === 'S') {
+                    stats += `Sideline: ${penalty.yards} yards - ${penalty.type}\n`;
+                }
+                if (penalty.player === 'U') {
+                    stats += `Unknown Player: ${penalty.yards} yards - ${penalty.type}\n`;
+                }
             });
+
         }
 
         return stats;
