@@ -1006,9 +1006,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (penalty.player === 'U') {
                     stats += `Unknown Player: ${penalty.yards} yards - ${penalty.type}\n`;
-                } else{
-                        stats += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
+                } else if (
+                      penalty.player != 'C' &&
+                      penalty.player != 'S' &&
+                      penalty.player != 'U'
+                    ) {
+                      stats += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
                     }
+
             });
 
         }
@@ -1123,15 +1128,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         gameData.penalties.forEach(penalty => {
             if (penalty.player === 'C') {
-                    html += `Coach: ${penalty.yards} yards - ${penalty.type}\n`;
+                    html += `<div>Coach: ${penalty.yards} yards - ${penalty.type}</div>`;
                 }
                 if (penalty.player === 'S') {
-                    html += `Sideline: ${penalty.yards} yards - ${penalty.type}\n`;
+                    html += `<div>Sideline: ${penalty.yards} yards - ${penalty.type}</div>`;
                 }
                 if (penalty.player === 'U') {
-                    html += `Unknown Player: ${penalty.yards} yards - ${penalty.type}\n`;
+                    html += `<div>Unknown Player: ${penalty.yards} yards - ${penalty.type}</div>`;
                 } else{
-                        html += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
+                        html += `<div>#${penalty.player}: ${penalty.yards} yards - ${penalty.type}</div>`;
                     }
         });
 
