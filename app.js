@@ -1135,9 +1135,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (penalty.player === 'U') {
                     html += `<div>Unknown Player: ${penalty.yards} yards - ${penalty.type}</div>`;
-                } else{
-                        html += `<div>#${penalty.player}: ${penalty.yards} yards - ${penalty.type}</div>`;
+                }  else if (
+                      penalty.player != 'C' &&
+                      penalty.player != 'S' &&
+                      penalty.player != 'U'
+                    ) {
+                      html += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
                     }
+
         });
 
         penaltyStatsContent.innerHTML = html;
