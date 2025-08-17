@@ -1006,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (penalty.player === 'U') {
                     stats += `Unknown Player: ${penalty.yards} yards - ${penalty.type}\n`;
-                    } else{
+                } else{
                         stats += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
                     }
             });
@@ -1122,7 +1122,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let html = '';
         gameData.penalties.forEach(penalty => {
-            html += `<div>#${penalty.player}: ${penalty.yards} yards - ${penalty.type}</div>`;
+            if (penalty.player === 'C') {
+                    html += `Coach: ${penalty.yards} yards - ${penalty.type}\n`;
+                }
+                if (penalty.player === 'S') {
+                    html += `Sideline: ${penalty.yards} yards - ${penalty.type}\n`;
+                }
+                if (penalty.player === 'U') {
+                    html += `Unknown Player: ${penalty.yards} yards - ${penalty.type}\n`;
+                } else{
+                        html += `#${penalty.player}: ${penalty.yards} yards - ${penalty.type}\n`;
+                    }
         });
 
         penaltyStatsContent.innerHTML = html;
