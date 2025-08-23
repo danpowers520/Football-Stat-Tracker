@@ -673,10 +673,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle Flag Play
     function handleFlagPlay() {
-        // Undo last play first
-        if (gameData.playHistory.length > 0) {
-            undoLastPlay();
-        }
 
         // Then ask for penalty details
         showInputModal('Penalty', [
