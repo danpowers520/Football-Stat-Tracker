@@ -139,10 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         handleEndGame();
     });
 
-    // Cancel button for input modal
-    cancelBtn.addEventListener('click', closeInputModal);
 
-    });
 
     // Handle input form submission
     inputForm.addEventListener('submit', function(e) {
