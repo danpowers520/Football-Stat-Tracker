@@ -128,11 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
         handleFlagPlay();
     });
 
-    // ❌ Remove this:
-    cancelBtn.addEventListener('cancel', function() {
-        closeInputModal();
-});
-
     // Undo Button
     undoBtn.addEventListener('click', function() {
         handleUndo();
@@ -144,7 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
         handleEndGame();
     });
 
-
+    // Cancel button for input modal
+    cancelBtn.addEventListener('cancel',function() {
+        closeInputModal();
+    });
 
     // Handle input form submission
     inputForm.addEventListener('submit', function(e) {
