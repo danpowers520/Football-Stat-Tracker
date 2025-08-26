@@ -128,6 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
         handleFlagPlay();
     });
 
+    // ❌ Remove this:
+    cancelBtn.addEventListener('cancel', function() {
+        closeInputModal();
+});
+
     // Undo Button
     undoBtn.addEventListener('click', function() {
         handleUndo();
