@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (flagBtn) flagBtn.addEventListener('click', handleFlagPlay);
     if (undoBtn) undoBtn.addEventListener('click', handleUndo);
     if (endGameBtn) endGameBtn.addEventListener('click', handleEndGame);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeInputModal);
 
     // Handle input form submission (actual handling is in showInputModal callback)
     inputForm.addEventListener('submit', function(e) {
@@ -173,25 +172,41 @@ document.addEventListener('DOMContentLoaded', function() {
                     data[field.id] = input.value;
                 }
             });
-            closeInputModal();
+            closeInputModal(false);
             inputForm.removeEventListener('submit', submitHandler);
             callback(data);
         };
         inputForm.addEventListener('submit', submitHandler);
 
+        // Wire cancel button to callback with cancelled=true
+        cancelBtn.onclick = () => {
+            closeInputModal(true, callback);
+            inputForm.removeEventListener('submit', submitHandler);
+        };
+
         inputModal.style.display = 'flex';
     }
 
-    function closeInputModal() {
+    // Modified closeInputModal to handle cancellation and callback
+    function closeInputModal(cancelled = false, callback = null) {
         inputModal.style.display = 'none';
+        if (cancelled && typeof callback === 'function') {
+            callback({ cancelled: true });
+        }
     }
 
-    // Handle Pass Play
+    // Handle Pass Play - now supports cancel and re-showing modal
     function handlePassPlay() {
-        showInputModal('Pass Play', [
-            { type: 'number', label: 'Target Player Number:', id: 'target', min: 1, max: 99, required: true }
-        ], (data) => {
-            const target = parseInt(data.target);
+        function askTarget() {
+            showInputModal('Pass Play', [
+                { type: 'number', label: 'Target Player Number:', id: 'target', min: 1, max: 99, required: true }
+            ], (data) => {
+                if (data.cancelled) return askTarget(); // re-show window
+                const target = parseInt(data.target);
+                askResult(target);
+            });
+        }
+        function askResult(target) {
             showInputModal('Pass Result', [
                 {
                     type: 'radio',
@@ -205,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (resultData) => {
+                if (resultData.cancelled) return askResult(target); // re-show window
                 const result = resultData.result;
                 gameData.attempts++;
                 if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].attempts++;
@@ -226,66 +242,82 @@ document.addEventListener('DOMContentLoaded', function() {
                     gameData.playHistory.push({ type: 'pass', target, result: 'incomplete', yards: 0 });
                     updateAllStats();
                 } else {
-                    showInputModal('Yards Gained', [
-                        { type: 'number', label: 'Yards:', id: 'yards', min: 0, required: true }
-                    ], (yardsData) => {
-                        const yards = parseInt(yardsData.yards);
-                        gameData.completions++;
-                        if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].completions++;
-                        gameData.receivers[target].qbs[gameData.currentQB].catches++;
-                        gameData.passYards += yards;
-                        if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].yards += yards;
-                        gameData.receivers[target].qbs[gameData.currentQB].yards += yards;
-
-                        if (result === 'touchdown') {
-                            gameData.passTDs++;
-                            if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].tds++;
-                            gameData.receivers[target].qbs[gameData.currentQB].tds++;
-                            gameData.playHistory.push({ type: 'pass', target, result: 'touchdown', yards });
-                            showInputModal('PAT Attempt', [
-                                {
-                                    type: 'radio',
-                                    label: 'PAT Result:',
-                                    id: 'pat',
-                                    options: [
-                                        { value: 'good', text: 'Good' },
-                                        { value: 'missed', text: 'Missed' }
-                                    ]
-                                }
-                            ], (patData) => {
-                                gameData.patAttempts++;
-                                if (patData.pat === 'good') gameData.patMade++;
-                                updateAllStats();
-                            });
-                        } else {
-                            gameData.playHistory.push({ type: 'pass', target, result: 'complete', yards });
-                            updateAllStats();
-                        }
-                    });
+                    askYards(target, result);
                 }
             });
-        });
+        }
+        function askYards(target, result) {
+            showInputModal('Yards Gained', [
+                { type: 'number', label: 'Yards:', id: 'yards', min: 0, required: true }
+            ], (yardsData) => {
+                if (yardsData.cancelled) return askYards(target, result); // re-show window
+                const yards = parseInt(yardsData.yards);
+                gameData.completions++;
+                if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].completions++;
+                gameData.receivers[target].qbs[gameData.currentQB].catches++;
+                gameData.passYards += yards;
+                if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].yards += yards;
+                gameData.receivers[target].qbs[gameData.currentQB].yards += yards;
+
+                if (result === 'touchdown') {
+                    gameData.passTDs++;
+                    if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].tds++;
+                    gameData.receivers[target].qbs[gameData.currentQB].tds++;
+                    gameData.playHistory.push({ type: 'pass', target, result: 'touchdown', yards });
+                    askPAT();
+                } else {
+                    gameData.playHistory.push({ type: 'pass', target, result: 'complete', yards });
+                    updateAllStats();
+                }
+            });
+        }
+        function askPAT() {
+            showInputModal('PAT Attempt', [
+                {
+                    type: 'radio',
+                    label: 'PAT Result:',
+                    id: 'pat',
+                    options: [
+                        { value: 'good', text: 'Good' },
+                        { value: 'missed', text: 'Missed' }
+                    ]
+                }
+            ], (patData) => {
+                if (patData.cancelled) return askPAT(); // re-show window
+                gameData.patAttempts++;
+                if (patData.pat === 'good') gameData.patMade++;
+                updateAllStats();
+            });
+        }
+
+        askTarget();
     }
 
-    // Handle Rush Play
+    // Handle Rush Play - now supports cancel and re-showing modal
     function handleRushPlay() {
-        showInputModal('Rush Play', [
-            { type: 'number', label: 'Rusher Number:', id: 'rusher', min: 1, max: 99, required: true },
-            { type: 'number', label: 'Yards Gained:', id: 'yards', required: true }
-        ], (data) => {
-            const rusher = parseInt(data.rusher);
-            const yards = parseInt(data.yards);
+        function askRush() {
+            showInputModal('Rush Play', [
+                { type: 'number', label: 'Rusher Number:', id: 'rusher', min: 1, max: 99, required: true },
+                { type: 'number', label: 'Yards Gained:', id: 'yards', required: true }
+            ], (data) => {
+                if (data.cancelled) return askRush();
+                const rusher = parseInt(data.rusher);
+                const yards = parseInt(data.yards);
 
-            gameData.rushes++;
-            gameData.rushYards += yards;
+                gameData.rushes++;
+                gameData.rushYards += yards;
 
-            if (!gameData.rushers[rusher]) {
-                gameData.rushers[rusher] = { carries: 0, yards: 0, tds: 0 };
-            }
-            gameData.rushers[rusher].carries++;
-            gameData.rushers[rusher].yards += yards;
-            if (rusher === gameData.currentQB && yards < 0) gameData.sacks++;
+                if (!gameData.rushers[rusher]) {
+                    gameData.rushers[rusher] = { carries: 0, yards: 0, tds: 0 };
+                }
+                gameData.rushers[rusher].carries++;
+                gameData.rushers[rusher].yards += yards;
+                if (rusher === gameData.currentQB && yards < 0) gameData.sacks++;
 
+                askTD(rusher, yards);
+            });
+        }
+        function askTD(rusher, yards) {
             showInputModal('Touchdown?', [
                 {
                     type: 'radio',
@@ -297,167 +329,197 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (tdData) => {
+                if (tdData.cancelled) return askTD(rusher, yards);
                 const playData = { type: 'rush', rusher, yards, touchdown: (tdData.touchdown === 'yes') };
                 if (tdData.touchdown === 'yes') {
                     gameData.rushTDs++;
                     gameData.rushers[rusher].tds++;
-                    showInputModal('PAT Attempt', [
-                        {
-                            type: 'radio',
-                            label: 'PAT Result:',
-                            id: 'pat',
-                            options: [
-                                { value: 'good', text: 'Good' },
-                                { value: 'missed', text: 'Missed' }
-                            ]
-                        }
-                    ], (patData) => {
-                        gameData.patAttempts++;
-                        if (patData.pat === 'good') gameData.patMade++;
-                        gameData.playHistory.push(playData);
-                        updateAllStats();
-                    });
+                    askPAT(playData);
                 } else {
                     gameData.playHistory.push(playData);
                     updateAllStats();
                 }
             });
-        });
+        }
+        function askPAT(playData) {
+            showInputModal('PAT Attempt', [
+                {
+                    type: 'radio',
+                    label: 'PAT Result:',
+                    id: 'pat',
+                    options: [
+                        { value: 'good', text: 'Good' },
+                        { value: 'missed', text: 'Missed' }
+                    ]
+                }
+            ], (patData) => {
+                if (patData.cancelled) return askPAT(playData);
+                gameData.patAttempts++;
+                if (patData.pat === 'good') gameData.patMade++;
+                gameData.playHistory.push(playData);
+                updateAllStats();
+            });
+        }
+        askRush();
     }
 
-    // Handle Kick Play
+    // Handle Kick Play - now supports cancel and re-showing modal
     function handleKickPlay() {
-        showInputModal('Kick Type', [
-            {
-                type: 'radio',
-                label: 'Type:',
-                id: 'type',
-                options: [
-                    { value: 'fg', text: 'Field Goal' },
-                    { value: 'pat', text: 'PAT' }
-                ]
-            }
-        ], (data) => {
-            const type = data.type;
-            if (type === 'fg') {
-                showInputModal('Field Goal Distance', [
-                    { type: 'number', label: 'Yards:', id: 'yards', min: 1, required: true }
-                ], (yardsData) => {
-                    const yards = parseInt(yardsData.yards);
-                    showInputModal('Field Goal Result', [
-                        {
-                            type: 'radio',
-                            label: 'Result:',
-                            id: 'result',
-                            options: [
-                                { value: 'good', text: 'Good' },
-                                { value: 'missed', text: 'Missed' }
-                            ]
-                        }
-                    ], (resultData) => {
-                        gameData.fgAttempts++;
-                        if (resultData.result === 'good') {
-                            gameData.fgMade++;
-                            gameData.fgYards.push(yards);
-                        }
-                        gameData.playHistory.push({ type: 'kick', kickType: 'fg', yards, result: resultData.result });
-                        updateAllStats();
-                    });
-                });
-            } else {
-                showInputModal('PAT Result', [
-                    {
-                        type: 'radio',
-                        label: 'Result:',
-                        id: 'result',
-                        options: [
-                            { value: 'good', text: 'Good' },
-                            { value: 'missed', text: 'Missed' }
-                        ]
-                    }
-                ], (resultData) => {
-                    gameData.patAttempts++;
-                    if (resultData.result === 'good') gameData.patMade++;
-                    gameData.playHistory.push({ type: 'kick', kickType: 'pat', result: resultData.result });
-                    updateAllStats();
-                });
-            }
-        });
+        function askType() {
+            showInputModal('Kick Type', [
+                {
+                    type: 'radio',
+                    label: 'Type:',
+                    id: 'type',
+                    options: [
+                        { value: 'fg', text: 'Field Goal' },
+                        { value: 'pat', text: 'PAT' }
+                    ]
+                }
+            ], (data) => {
+                if (data.cancelled) return askType();
+                const type = data.type;
+                if (type === 'fg') {
+                    askFGYards();
+                } else {
+                    askPATResult('pat');
+                }
+            });
+        }
+        function askFGYards() {
+            showInputModal('Field Goal Distance', [
+                { type: 'number', label: 'Yards:', id: 'yards', min: 1, required: true }
+            ], (yardsData) => {
+                if (yardsData.cancelled) return askFGYards();
+                const yards = parseInt(yardsData.yards);
+                askFGResult(yards);
+            });
+        }
+        function askFGResult(yards) {
+            showInputModal('Field Goal Result', [
+                {
+                    type: 'radio',
+                    label: 'Result:',
+                    id: 'result',
+                    options: [
+                        { value: 'good', text: 'Good' },
+                        { value: 'missed', text: 'Missed' }
+                    ]
+                }
+            ], (resultData) => {
+                if (resultData.cancelled) return askFGResult(yards);
+                gameData.fgAttempts++;
+                if (resultData.result === 'good') {
+                    gameData.fgMade++;
+                    gameData.fgYards.push(yards);
+                }
+                gameData.playHistory.push({ type: 'kick', kickType: 'fg', yards, result: resultData.result });
+                updateAllStats();
+            });
+        }
+        function askPATResult(kickType) {
+            showInputModal('PAT Result', [
+                {
+                    type: 'radio',
+                    label: 'Result:',
+                    id: 'result',
+                    options: [
+                        { value: 'good', text: 'Good' },
+                        { value: 'missed', text: 'Missed' }
+                    ]
+                }
+            ], (resultData) => {
+                if (resultData.cancelled) return askPATResult(kickType);
+                gameData.patAttempts++;
+                if (resultData.result === 'good') gameData.patMade++;
+                gameData.playHistory.push({ type: 'kick', kickType, result: resultData.result });
+                updateAllStats();
+            });
+        }
+        askType();
     }
 
-    // Handle Defense Play
+    // Handle Defense Play - now supports cancel and re-showing modal
     function handleDefensePlay() {
-        showInputModal('Defensive Play', [
-            { type: 'number', label: 'Player Number:', id: 'player', min: 1, max: 99, required: true },
-            {
-                type: 'radio',
-                label: 'Play Type:',
-                id: 'playType',
-                options: [
-                    { value: 'tackle', text: 'Tackle' },
-                    { value: 'sack', text: 'Sack' },
-                    { value: 'interception', text: 'Interception' },
-                    { value: 'fumble', text: 'Forced Fumble' },
-                    { value: 'tfl', text: 'TFL' }
-                ]
-            }
-        ], (data) => {
-            const player = parseInt(data.player);
-            const playType = data.playType;
+        function askDefense() {
+            showInputModal('Defensive Play', [
+                { type: 'number', label: 'Player Number:', id: 'player', min: 1, max: 99, required: true },
+                {
+                    type: 'radio',
+                    label: 'Play Type:',
+                    id: 'playType',
+                    options: [
+                        { value: 'tackle', text: 'Tackle' },
+                        { value: 'sack', text: 'Sack' },
+                        { value: 'interception', text: 'Interception' },
+                        { value: 'fumble', text: 'Forced Fumble' },
+                        { value: 'tfl', text: 'TFL' }
+                    ]
+                }
+            ], (data) => {
+                if (data.cancelled) return askDefense();
+                const player = parseInt(data.player);
+                const playType = data.playType;
 
-            if (!gameData.defenseStats.players[player]) {
-                gameData.defenseStats.players[player] = {
-                    tackles: 0,
-                    sacks: 0,
-                    interceptions: 0,
-                    forcedFumbles: 0,
-                    tfl: 0
-                };
-            }
+                if (!gameData.defenseStats.players[player]) {
+                    gameData.defenseStats.players[player] = {
+                        tackles: 0,
+                        sacks: 0,
+                        interceptions: 0,
+                        forcedFumbles: 0,
+                        tfl: 0
+                    };
+                }
 
-            switch (playType) {
-                case 'tackle':
-                    gameData.defenseStats.tackles++;
-                    gameData.defenseStats.players[player].tackles++;
-                    break;
-                case 'sack':
-                    gameData.defenseStats.sacks++;
-                    gameData.defenseStats.players[player].sacks++;
-                    break;
-                case 'interception':
-                    gameData.defenseStats.interceptions++;
-                    gameData.defenseStats.players[player].interceptions++;
-                    break;
-                case 'fumble':
-                    gameData.defenseStats.forcedFumbles++;
-                    gameData.defenseStats.players[player].forcedFumbles++;
-                    break;
-                case 'tfl':
-                    gameData.defenseStats.tfl++;
-                    gameData.defenseStats.players[player].tfl++;
-                    break;
-            }
+                switch (playType) {
+                    case 'tackle':
+                        gameData.defenseStats.tackles++;
+                        gameData.defenseStats.players[player].tackles++;
+                        break;
+                    case 'sack':
+                        gameData.defenseStats.sacks++;
+                        gameData.defenseStats.players[player].sacks++;
+                        break;
+                    case 'interception':
+                        gameData.defenseStats.interceptions++;
+                        gameData.defenseStats.players[player].interceptions++;
+                        break;
+                    case 'fumble':
+                        gameData.defenseStats.forcedFumbles++;
+                        gameData.defenseStats.players[player].forcedFumbles++;
+                        break;
+                    case 'tfl':
+                        gameData.defenseStats.tfl++;
+                        gameData.defenseStats.players[player].tfl++;
+                        break;
+                }
 
-            gameData.playHistory.push({ type: 'defense', player, playType });
-            updateAllStats();
-        });
+                gameData.playHistory.push({ type: 'defense', player, playType });
+                updateAllStats();
+            });
+        }
+        askDefense();
     }
 
-    // Handle Flag Play
+    // Handle Flag Play - now supports cancel and re-showing modal
     function handleFlagPlay() {
-        showInputModal('Penalty', [
-            { type: 'text', label: 'Penalty Type:', id: 'type', required: true },
-            { type: 'number', label: 'Yards:', id: 'yards', required: true },
-            { type: 'text', label: 'Player Number (S for sideline, C for coach, U for Unknown):', id: 'player', required: true }
-        ], (data) => {
-            const penalty = {
-                type: data.type,
-                yards: parseInt(data.yards),
-                player: data.player
-            };
-            gameData.penalties.push(penalty);
-            updateAllStats();
-        });
+        function askPenalty() {
+            showInputModal('Penalty', [
+                { type: 'text', label: 'Penalty Type:', id: 'type', required: true },
+                { type: 'number', label: 'Yards:', id: 'yards', required: true },
+                { type: 'text', label: 'Player Number (S for sideline, C for coach, U for Unknown):', id: 'player', required: true }
+            ], (data) => {
+                if (data.cancelled) return askPenalty();
+                const penalty = {
+                    type: data.type,
+                    yards: parseInt(data.yards),
+                    player: data.player
+                };
+                gameData.penalties.push(penalty);
+                updateAllStats();
+            });
+        }
+        askPenalty();
     }
 
     // Handle Undo
@@ -569,6 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showInputModal('Change Quarterback', [
             { type: 'number', label: 'New QB Number:', id: 'qbNumber', min: 1, max: 99, required: true }
         ], (data) => {
+            if (data.cancelled) return handleChangeQB();
             const qbNumber = parseInt(data.qbNumber);
             if (!gameData.qbs[qbNumber]) {
                 gameData.qbs[qbNumber] = {
