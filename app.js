@@ -172,36 +172,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     data[field.id] = input.value;
                 }
             });
-            closeInputModal(false);
+            closeInputModal();
             inputForm.removeEventListener('submit', submitHandler);
             callback(data);
         };
         inputForm.addEventListener('submit', submitHandler);
 
-        // Wire cancel button to callback with cancelled=true
+        // Cancel now just closes the modal and aborts the flow
         cancelBtn.onclick = () => {
-            closeInputModal(true, callback);
+            closeInputModal();
             inputForm.removeEventListener('submit', submitHandler);
+            callback({ cancelled: true });
         };
 
         inputModal.style.display = 'flex';
     }
 
-    // Modified closeInputModal to handle cancellation and callback
-    function closeInputModal(cancelled = false, callback = null) {
+    function closeInputModal() {
         inputModal.style.display = 'none';
-        if (cancelled && typeof callback === 'function') {
-            callback({ cancelled: true });
-        }
     }
 
-    // Handle Pass Play - now supports cancel and re-showing modal
+    // All modal flows now properly abort if cancelled
+
     function handlePassPlay() {
         function askTarget() {
             showInputModal('Pass Play', [
                 { type: 'number', label: 'Target Player Number:', id: 'target', min: 1, max: 99, required: true }
             ], (data) => {
-                if (data.cancelled) return askTarget(); // re-show window
+                if (data.cancelled) return; // ABORT flow
                 const target = parseInt(data.target);
                 askResult(target);
             });
@@ -220,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (resultData) => {
-                if (resultData.cancelled) return askResult(target); // re-show window
+                if (resultData.cancelled) return;
                 const result = resultData.result;
                 gameData.attempts++;
                 if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].attempts++;
@@ -250,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showInputModal('Yards Gained', [
                 { type: 'number', label: 'Yards:', id: 'yards', min: 0, required: true }
             ], (yardsData) => {
-                if (yardsData.cancelled) return askYards(target, result); // re-show window
+                if (yardsData.cancelled) return;
                 const yards = parseInt(yardsData.yards);
                 gameData.completions++;
                 if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].completions++;
@@ -283,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (patData) => {
-                if (patData.cancelled) return askPAT(); // re-show window
+                if (patData.cancelled) return;
                 gameData.patAttempts++;
                 if (patData.pat === 'good') gameData.patMade++;
                 updateAllStats();
@@ -293,14 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
         askTarget();
     }
 
-    // Handle Rush Play - now supports cancel and re-showing modal
     function handleRushPlay() {
         function askRush() {
             showInputModal('Rush Play', [
                 { type: 'number', label: 'Rusher Number:', id: 'rusher', min: 1, max: 99, required: true },
                 { type: 'number', label: 'Yards Gained:', id: 'yards', required: true }
             ], (data) => {
-                if (data.cancelled) return askRush();
+                if (data.cancelled) return;
                 const rusher = parseInt(data.rusher);
                 const yards = parseInt(data.yards);
 
@@ -329,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (tdData) => {
-                if (tdData.cancelled) return askTD(rusher, yards);
+                if (tdData.cancelled) return;
                 const playData = { type: 'rush', rusher, yards, touchdown: (tdData.touchdown === 'yes') };
                 if (tdData.touchdown === 'yes') {
                     gameData.rushTDs++;
@@ -353,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (patData) => {
-                if (patData.cancelled) return askPAT(playData);
+                if (patData.cancelled) return;
                 gameData.patAttempts++;
                 if (patData.pat === 'good') gameData.patMade++;
                 gameData.playHistory.push(playData);
@@ -363,7 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
         askRush();
     }
 
-    // Handle Kick Play - now supports cancel and re-showing modal
     function handleKickPlay() {
         function askType() {
             showInputModal('Kick Type', [
@@ -377,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (data) => {
-                if (data.cancelled) return askType();
+                if (data.cancelled) return;
                 const type = data.type;
                 if (type === 'fg') {
                     askFGYards();
@@ -390,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showInputModal('Field Goal Distance', [
                 { type: 'number', label: 'Yards:', id: 'yards', min: 1, required: true }
             ], (yardsData) => {
-                if (yardsData.cancelled) return askFGYards();
+                if (yardsData.cancelled) return;
                 const yards = parseInt(yardsData.yards);
                 askFGResult(yards);
             });
@@ -407,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (resultData) => {
-                if (resultData.cancelled) return askFGResult(yards);
+                if (resultData.cancelled) return;
                 gameData.fgAttempts++;
                 if (resultData.result === 'good') {
                     gameData.fgMade++;
@@ -429,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (resultData) => {
-                if (resultData.cancelled) return askPATResult(kickType);
+                if (resultData.cancelled) return;
                 gameData.patAttempts++;
                 if (resultData.result === 'good') gameData.patMade++;
                 gameData.playHistory.push({ type: 'kick', kickType, result: resultData.result });
@@ -439,7 +435,6 @@ document.addEventListener('DOMContentLoaded', function() {
         askType();
     }
 
-    // Handle Defense Play - now supports cancel and re-showing modal
     function handleDefensePlay() {
         function askDefense() {
             showInputModal('Defensive Play', [
@@ -457,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 }
             ], (data) => {
-                if (data.cancelled) return askDefense();
+                if (data.cancelled) return;
                 const player = parseInt(data.player);
                 const playType = data.playType;
 
@@ -501,7 +496,6 @@ document.addEventListener('DOMContentLoaded', function() {
         askDefense();
     }
 
-    // Handle Flag Play - now supports cancel and re-showing modal
     function handleFlagPlay() {
         function askPenalty() {
             showInputModal('Penalty', [
@@ -509,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { type: 'number', label: 'Yards:', id: 'yards', required: true },
                 { type: 'text', label: 'Player Number (S for sideline, C for coach, U for Unknown):', id: 'player', required: true }
             ], (data) => {
-                if (data.cancelled) return askPenalty();
+                if (data.cancelled) return;
                 const penalty = {
                     type: data.type,
                     yards: parseInt(data.yards),
@@ -631,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showInputModal('Change Quarterback', [
             { type: 'number', label: 'New QB Number:', id: 'qbNumber', min: 1, max: 99, required: true }
         ], (data) => {
-            if (data.cancelled) return handleChangeQB();
+            if (data.cancelled) return;
             const qbNumber = parseInt(data.qbNumber);
             if (!gameData.qbs[qbNumber]) {
                 gameData.qbs[qbNumber] = {
