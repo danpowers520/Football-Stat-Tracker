@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const flagBtn = document.getElementById('flagBtn');
     const undoBtn = document.getElementById('undoBtn');
     const endGameBtn = document.getElementById('endGameBtn');
+    // NEW: Change QB button
+    const changeQbBtn = document.getElementById('changeQbBtn');
 
     // Stats content divs
     const passStatsContent = document.getElementById('passStatsContent');
@@ -101,6 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (flagBtn) flagBtn.addEventListener('click', handleFlagPlay);
     if (undoBtn) undoBtn.addEventListener('click', handleUndo);
     if (endGameBtn) endGameBtn.addEventListener('click', handleEndGame);
+    // NEW: Change QB button event
+    if (changeQbBtn) changeQbBtn.addEventListener('click', handleChangeQB);
 
     // Handle input form submission (actual handling is in showInputModal callback)
     inputForm.addEventListener('submit', function(e) {
@@ -309,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 gameData.rushers[rusher].carries++;
                 gameData.rushers[rusher].yards += yards;
+                // SACK LOGIC: If the rusher is the current QB and yards < 0, it's a sack
                 if (rusher === gameData.currentQB && yards < 0) gameData.sacks++;
 
                 askTD(rusher, yards);
@@ -638,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             }
             gameData.currentQB = qbNumber;
+            // On changing QB, the new statline will be created at the top in the pass stats display
             updateAllStats();
         });
     }
@@ -743,7 +749,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updatePassStats() {
         let html = '';
-        for (const qbNum in gameData.qbs) {
+        // Ensure the current QB is displayed first (top of pass stats window)
+        let qbOrder = Object.keys(gameData.qbs);
+        if (qbOrder.length > 1 && qbOrder.includes(String(gameData.currentQB))) {
+            qbOrder = [String(gameData.currentQB), ...qbOrder.filter(qb => qb !== String(gameData.currentQB))];
+        }
+        for (const qbNum of qbOrder) {
             const qb = gameData.qbs[qbNum];
             html += `<div><strong>QB #${qbNum}:</strong> ${qb.completions}/${qb.attempts}, ${qb.yards} yards, ${qb.tds} TD, ${qb.ints} INT</div>`;
             html += '<div class="receiver-stats" style="margin-left: 15px; margin-top: 5px; margin-bottom: 10px;">';
