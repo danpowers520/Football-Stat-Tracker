@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function handlePassPlay() {
         function askTarget() {
             showInputModal('Pass Play', [
-                { type: 'number', label: 'Target Player Number:', id: 'target', min: 1, max: 99, required: true }
+                { type: 'number', label: 'Target Player Number:', id: 'target', min: 0, max: 99, required: true }
             ], (data) => {
                 if (data.cancelled) return; // ABORT flow
                 const target = parseInt(data.target);
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleRushPlay() {
         function askRush() {
             showInputModal('Rush Play', [
-                { type: 'number', label: 'Rusher Number:', id: 'rusher', min: 1, max: 99, required: true },
+                { type: 'number', label: 'Rusher Number:', id: 'rusher', min: 0, max: 99, required: true },
                 { type: 'number', label: 'Yards Gained:', id: 'yards', required: true }
             ], (data) => {
                 if (data.cancelled) return;
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleDefensePlay() {
         function askDefense() {
             showInputModal('Defensive Play', [
-                { type: 'number', label: 'Player Number:', id: 'player', min: 1, max: 99, required: true },
+                { type: 'number', label: 'Player Number:', id: 'player', min: 0, max: 99, required: true },
                 {
                     type: 'radio',
                     label: 'Play Type:',
