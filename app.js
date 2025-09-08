@@ -668,10 +668,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // Rushing stats - ENHANCED
         stats += `RUSHING:\n`;
-        stats += `Team: ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD, yds/carry: ${getTeamYdsPerCarry().toFixed(2)}, Longest Rush: ${getTeamLongestRush()}\n`;
+        stats += `Team: ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD, YPC: ${getTeamYdsPerCarry().toFixed(2)}, Longest: ${getTeamLongestRush()}\n`;
         for (const rusherNum in gameData.rushers) {
             const rusher = gameData.rushers[rusherNum];
-            let rusherStats = `#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD, yds/carry: ${getRusherYdsPerCarry(rusher).toFixed(2)}, Longest Rush: ${getRusherLongestRush(rusher)}`;
+            let rusherStats = `#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD, YPC: ${getRusherYdsPerCarry(rusher).toFixed(2)}, Longest: ${getRusherLongestRush(rusher)}`;
             if (rusherNum == gameData.currentQB) rusherStats += ` (sacked ${gameData.sacks} times)`;
             stats += `${rusherStats}\n`;
         }
@@ -768,14 +768,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // ---- ENHANCED: Adds yds/carry, longest rush to display ----
     function updateRushStats() {
         let html = `<div><strong>Team:</strong> ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD
-            <span style="margin-left:10px;"><strong>yds/carry:</strong> ${getTeamYdsPerCarry().toFixed(2)}</span>
-            <span style="margin-left:10px;"><strong>Longest Rush:</strong> ${getTeamLongestRush()}</span>
+            <span style="margin-left:10px;"> YPC: ${getTeamYdsPerCarry().toFixed(2)}</span>
+            <span style="margin-left:10px;"> Longest: ${getTeamLongestRush()}</span>
         </div>`;
         for (const rusherNum in gameData.rushers) {
             const rusher = gameData.rushers[rusherNum];
             let rusherLine = `<div>#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD
-                <span style="margin-left:10px;"><strong>yds/carry:</strong> ${getRusherYdsPerCarry(rusher).toFixed(2)}</span>
-                <span style="margin-left:10px;"><strong>Longest Rush:</strong> ${getRusherLongestRush(rusher)}</span>`;
+                <span style="margin-left:10px;">YPC: ${getRusherYdsPerCarry(rusher).toFixed(2)}</span>
+                <span style="margin-left:10px;">Longest: ${getRusherLongestRush(rusher)}</span>`;
             if (rusherNum == gameData.currentQB) rusherLine += ` (sacked ${gameData.sacks} times)`;
             rusherLine += '</div>';
             html += rusherLine;
