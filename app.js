@@ -1,4 +1,3 @@
-// Football Stats Tracker - JavaScript (Cleaned Version)
 document.addEventListener('DOMContentLoaded', function() {
     // Game data object to store all statistics
     let gameData = {
@@ -25,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         penalties: [],
         playHistory: [],
         receivers: {},
+        // ENHANCED: Each rusher now tracks every carry's yardage!
         rushers: {},
         defenseStats: {
             tackles: 0,
@@ -36,6 +36,28 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         qbs: {}
     };
+
+    // ---- HELPER FUNCTIONS FOR ADVANCED RUSH STATS ----
+    function getTeamYdsPerCarry() {
+        return gameData.rushes ? (gameData.rushYards / gameData.rushes) : 0;
+    }
+
+    function getTeamLongestRush() {
+        let allRushes = [];
+        for (const rusherNum in gameData.rushers) {
+            allRushes = allRushes.concat(gameData.rushers[rusherNum].rushes || []);
+        }
+        return allRushes.length ? Math.max(...allRushes) : 0;
+    }
+
+    function getRusherYdsPerCarry(rusher) {
+        return rusher.carries ? (rusher.yards / rusher.carries) : 0;
+    }
+
+    function getRusherLongestRush(rusher) {
+        return rusher.rushes && rusher.rushes.length ? Math.max(...rusher.rushes) : 0;
+    }
+    // ---- END HELPER FUNCTIONS ----
 
     // Get elements
     const setupForm = document.getElementById('setupForm');
@@ -56,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const endGameBtn = document.getElementById('endGameBtn');
     // NEW: Change QB button
     const changeQbBtn = document.getElementById('changeQbBtn');
-
     // Stats content divs
     const passStatsContent = document.getElementById('passStatsContent');
     const rushStatsContent = document.getElementById('rushStatsContent');
@@ -69,10 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const opponent = document.getElementById('opponent').value;
         const qbNumber = parseInt(document.getElementById('qbNumber').value);
-
         gameData.opponent = opponent;
         gameData.currentQB = qbNumber;
-
         // Initialize QB stats
         gameData.qbs[qbNumber] = {
             number: qbNumber,
@@ -82,16 +101,12 @@ document.addEventListener('DOMContentLoaded', function() {
             tds: 0,
             ints: 0
         };
-
         // Update UI
         opponentDisplay.textContent = opponent;
-
         // Hide the setup modal robustly
         setupModal.style.display = 'none';
         setupModal.style.cssText = "display: none !important;";
         setupModal.classList.add('hidden');
-
-        console.log(`Game started against ${opponent} with QB #${qbNumber}`);
         updateAllStats();
     });
 
@@ -115,40 +130,32 @@ document.addEventListener('DOMContentLoaded', function() {
     function showInputModal(title, fields, callback) {
         inputTitle.textContent = title;
         inputFields.innerHTML = '';
-
         // Create input fields
         fields.forEach(field => {
             const fieldDiv = document.createElement('div');
             fieldDiv.className = 'form-group';
-
             const label = document.createElement('label');
             label.textContent = field.label;
             label.htmlFor = field.id;
             fieldDiv.appendChild(label);
-
             if (field.type === 'radio') {
                 const radioGroup = document.createElement('div');
                 radioGroup.className = 'radio-group';
-
                 field.options.forEach(option => {
                     const radioOption = document.createElement('div');
                     radioOption.className = 'radio-option';
-
                     const input = document.createElement('input');
                     input.type = 'radio';
                     input.name = field.id;
                     input.id = `${field.id}_${option.value}`;
                     input.value = option.value;
-
                     const optionLabel = document.createElement('label');
                     optionLabel.textContent = option.text;
                     optionLabel.htmlFor = `${field.id}_${option.value}`;
-
                     radioOption.appendChild(input);
                     radioOption.appendChild(optionLabel);
                     radioGroup.appendChild(radioOption);
                 });
-
                 fieldDiv.appendChild(radioGroup);
             } else {
                 const input = document.createElement('input');
@@ -162,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             inputFields.appendChild(fieldDiv);
         });
-
         // Set up the form submission for modal
         const submitHandler = function(e) {
             e.preventDefault();
@@ -181,14 +187,12 @@ document.addEventListener('DOMContentLoaded', function() {
             callback(data);
         };
         inputForm.addEventListener('submit', submitHandler);
-
         // Cancel now just closes the modal and aborts the flow
         cancelBtn.onclick = () => {
             closeInputModal();
             inputForm.removeEventListener('submit', submitHandler);
             callback({ cancelled: true });
         };
-
         inputModal.style.display = 'flex';
     }
 
@@ -197,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // All modal flows now properly abort if cancelled
-
     function handlePassPlay() {
         function askTarget() {
             showInputModal('Pass Play', [
@@ -227,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = resultData.result;
                 gameData.attempts++;
                 if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].attempts++;
-
                 if (!gameData.receivers[target]) gameData.receivers[target] = { qbs: {} };
                 if (!gameData.receivers[target].qbs[gameData.currentQB]) {
                     gameData.receivers[target].qbs[gameData.currentQB] = {
@@ -235,7 +237,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
                 gameData.receivers[target].qbs[gameData.currentQB].targets++;
-
                 if (result === 'interception') {
                     gameData.ints++;
                     if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].ints++;
@@ -261,7 +262,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 gameData.passYards += yards;
                 if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].yards += yards;
                 gameData.receivers[target].qbs[gameData.currentQB].yards += yards;
-
                 if (result === 'touchdown') {
                     gameData.passTDs++;
                     if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].tds++;
@@ -292,10 +292,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateAllStats();
             });
         }
-
         askTarget();
     }
 
+    // --- CHANGED: Increments rusher's .rushes array per run!
     function handleRushPlay() {
         function askRush() {
             showInputModal('Rush Play', [
@@ -305,18 +305,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.cancelled) return;
                 const rusher = parseInt(data.rusher);
                 const yards = parseInt(data.yards);
-
                 gameData.rushes++;
                 gameData.rushYards += yards;
-
                 if (!gameData.rushers[rusher]) {
-                    gameData.rushers[rusher] = { carries: 0, yards: 0, tds: 0 };
+                    gameData.rushers[rusher] = { carries: 0, yards: 0, tds: 0, rushes: [] };
                 }
                 gameData.rushers[rusher].carries++;
                 gameData.rushers[rusher].yards += yards;
-                // SACK LOGIC: If the rusher is the current QB and yards < 0, it's a sack
+                gameData.rushers[rusher].rushes.push(yards); // <-- NEW
                 if (rusher === gameData.currentQB && yards < 0) gameData.sacks++;
-
                 askTD(rusher, yards);
             });
         }
@@ -461,7 +458,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.cancelled) return;
                 const player = parseInt(data.player);
                 const playType = data.playType;
-
                 if (!gameData.defenseStats.players[player]) {
                     gameData.defenseStats.players[player] = {
                         tackles: 0,
@@ -471,7 +467,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         tfl: 0
                     };
                 }
-
                 switch (playType) {
                     case 'tackle':
                         gameData.defenseStats.tackles++;
@@ -494,7 +489,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         gameData.defenseStats.players[player].tfl++;
                         break;
                 }
-
                 gameData.playHistory.push({ type: 'defense', player, playType });
                 updateAllStats();
             });
@@ -573,12 +567,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // --- CHANGED: Remove last rush from .rushes array!
     function undoRushPlay(play) {
         gameData.rushes--;
         gameData.rushYards -= play.yards;
         if (gameData.rushers[play.rusher]) {
             gameData.rushers[play.rusher].carries--;
             gameData.rushers[play.rusher].yards -= play.yards;
+            if (gameData.rushers[play.rusher].rushes) gameData.rushers[play.rusher].rushes.pop();
         }
         if (play.rusher === gameData.currentQB && play.yards < 0) gameData.sacks--;
         if (play.touchdown) {
@@ -644,14 +640,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             }
             gameData.currentQB = qbNumber;
-            // On changing QB, the new statline will be created at the top in the pass stats display
             updateAllStats();
         });
     }
 
     // End Game
     function handleEndGame() {
-        console.log("End game triggered");
         const statsText = generateFinalStats();
         downloadStats(statsText);
     }
@@ -672,12 +666,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             stats += '\n';
         }
-        // Rush stats
+        // Rushing stats - ENHANCED
         stats += `RUSHING:\n`;
-        stats += `Team: ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD\n`;
+        stats += `Team: ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD, yds/carry: ${getTeamYdsPerCarry().toFixed(2)}, Longest Rush: ${getTeamLongestRush()}\n`;
         for (const rusherNum in gameData.rushers) {
             const rusher = gameData.rushers[rusherNum];
-            let rusherStats = `#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD`;
+            let rusherStats = `#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD, yds/carry: ${getRusherYdsPerCarry(rusher).toFixed(2)}, Longest Rush: ${getRusherLongestRush(rusher)}`;
             if (rusherNum == gameData.currentQB) rusherStats += ` (sacked ${gameData.sacks} times)`;
             stats += `${rusherStats}\n`;
         }
@@ -739,7 +733,7 @@ document.addEventListener('DOMContentLoaded', function() {
         URL.revokeObjectURL(url);
     }
 
-    // Update functions for the stats windows
+    // --------- Live stats window updates ---------
     function updateAllStats() {
         updatePassStats();
         updateRushStats();
@@ -750,7 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updatePassStats() {
         let html = '';
-        // Ensure the current QB is displayed first (top of pass stats window)
+        // Ensure the current QB is displayed first
         let qbOrder = Object.keys(gameData.qbs);
         if (qbOrder.length > 1 && qbOrder.includes(String(gameData.currentQB))) {
             qbOrder = [String(gameData.currentQB), ...qbOrder.filter(qb => qb !== String(gameData.currentQB))];
@@ -771,11 +765,17 @@ document.addEventListener('DOMContentLoaded', function() {
         passStatsContent.innerHTML = html || 'No passing stats recorded yet';
     }
 
+    // ---- ENHANCED: Adds yds/carry, longest rush to display ----
     function updateRushStats() {
-        let html = `<div><strong>Team:</strong> ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD</div>`;
+        let html = `<div><strong>Team:</strong> ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD
+            <span style="margin-left:10px;"><strong>yds/carry:</strong> ${getTeamYdsPerCarry().toFixed(2)}</span>
+            <span style="margin-left:10px;"><strong>Longest Rush:</strong> ${getTeamLongestRush()}</span>
+        </div>`;
         for (const rusherNum in gameData.rushers) {
             const rusher = gameData.rushers[rusherNum];
-            let rusherLine = `<div>#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD`;
+            let rusherLine = `<div>#${rusherNum}: ${rusher.yards} yards on ${rusher.carries} carries for ${rusher.tds} TD
+                <span style="margin-left:10px;"><strong>yds/carry:</strong> ${getRusherYdsPerCarry(rusher).toFixed(2)}</span>
+                <span style="margin-left:10px;"><strong>Longest Rush:</strong> ${getRusherLongestRush(rusher)}</span>`;
             if (rusherNum == gameData.currentQB) rusherLine += ` (sacked ${gameData.sacks} times)`;
             rusherLine += '</div>';
             html += rusherLine;
@@ -829,4 +829,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         penaltyStatsContent.innerHTML = html;
     }
+
 });
