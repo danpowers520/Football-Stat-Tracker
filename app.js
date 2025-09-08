@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!gameData.receivers[target]) gameData.receivers[target] = { qbs: {} };
                 if (!gameData.receivers[target].qbs[gameData.currentQB]) {
                     gameData.receivers[target].qbs[gameData.currentQB] = {
-                        catches: 0, drops: 0, targets: 0, yards: 0, tds: 0
+                        catches: 0, targets: 0, yards: 0, tds: 0
                     };
                 }
                 gameData.receivers[target].qbs[gameData.currentQB].targets++;
@@ -243,9 +243,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateAllStats();
                 } else if (result === 'incomplete') {
                     gameData.playHistory.push({ type: 'pass', target, result: 'incomplete', yards: 0 });
-                    updateAllStats();
-                } else if (result === 'drop') {
-                    gameData.playHistory.push({ type: 'pass', target, result: 'drop', yards: 0 });
                     updateAllStats();
                 } else {
                     askYards(target, result);
@@ -670,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const receiver = gameData.receivers[receiverNum];
                 if (receiver.qbs && receiver.qbs[qbNum]) {
                     const recStats = receiver.qbs[qbNum];
-                    stats += `  #${receiverNum}: ${recStats.catches} catches and ${recStats.drop} drops on ${recStats.targets} targets for ${recStats.yards} yards and ${recStats.tds} TD\n`;
+                    stats += `  #${receiverNum}: ${recStats.catches} catches on ${recStats.targets} targets for ${recStats.yards} yards and ${recStats.tds} TD\n`;
                 }
             }
             stats += '\n';
