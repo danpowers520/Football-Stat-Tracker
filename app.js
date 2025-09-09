@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         { value: 'incomplete', text: 'Incomplete' },
                         { value: 'touchdown', text: 'Touchdown' },
                         { value: 'interception', text: 'Interception' },
-                        { value: 'drop', text: 'Dropped' }
+                        // { value: 'drop', text: 'Dropped' }
                     ]
                 }
             ], (resultData) => {
