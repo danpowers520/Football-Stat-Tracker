@@ -36,10 +36,12 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         qbs: {}
     };
+
     // ---- HELPER FUNCTIONS FOR ADVANCED RUSH STATS ----
     function getTeamYdsPerCarry() {
         return gameData.rushes ? (gameData.rushYards / gameData.rushes) : 0;
     }
+
     function getTeamLongestRush() {
         let allRushes = [];
         for (const rusherNum in gameData.rushers) {
@@ -47,13 +49,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return allRushes.length ? Math.max(...allRushes) : 0;
     }
+
     function getRusherYdsPerCarry(rusher) {
         return rusher.carries ? (rusher.yards / rusher.carries) : 0;
     }
+
     function getRusherLongestRush(rusher) {
         return rusher.rushes && rusher.rushes.length ? Math.max(...rusher.rushes) : 0;
     }
     // ---- END HELPER FUNCTIONS ----
+
     // Get elements
     const setupForm = document.getElementById('setupForm');
     const setupModal = document.getElementById('setupModal');
@@ -73,14 +78,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const endGameBtn = document.getElementById('endGameBtn');
     // NEW: Change QB button
     const changeQbBtn = document.getElementById('changeQbBtn');
-    // NEW: MaxPreps Export button
-    const maxPrepsBtn = document.getElementById('maxPrepsBtn');
     // Stats content divs
     const passStatsContent = document.getElementById('passStatsContent');
     const rushStatsContent = document.getElementById('rushStatsContent');
     const kickStatsContent = document.getElementById('kickStatsContent');
     const defenseStatsContent = document.getElementById('defenseStatsContent');
     const penaltyStatsContent = document.getElementById('penaltyStatsContent');
+
     // Setup form submission initializes the game
     setupForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -105,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModal.classList.add('hidden');
         updateAllStats();
     });
+
     // Button event listeners
     if (passBtn) passBtn.addEventListener('click', handlePassPlay);
     if (rushBtn) rushBtn.addEventListener('click', handleRushPlay);
@@ -115,12 +120,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (endGameBtn) endGameBtn.addEventListener('click', handleEndGame);
     // NEW: Change QB button event
     if (changeQbBtn) changeQbBtn.addEventListener('click', handleChangeQB);
-    // NEW: MaxPreps Export button event
-    if (maxPrepsBtn) maxPrepsBtn.addEventListener('click', handleMaxPrepsExport);
+
     // Handle input form submission (actual handling is in showInputModal callback)
     inputForm.addEventListener('submit', function(e) {
         e.preventDefault();
     });
+
     // Show input modal with custom fields and a callback
     function showInputModal(title, fields, callback) {
         inputTitle.textContent = title;
@@ -190,9 +195,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         inputModal.style.display = 'flex';
     }
+
     function closeInputModal() {
         inputModal.style.display = 'none';
     }
+
     // All modal flows now properly abort if cancelled
     function handlePassPlay() {
         function askTarget() {
@@ -287,6 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askTarget();
     }
+
     // --- CHANGED: Increments rusher's .rushes array per run!
     function handleRushPlay() {
         function askRush() {
@@ -354,6 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askRush();
     }
+
     function handleKickPlay() {
         function askType() {
             showInputModal('Kick Type', [
@@ -428,6 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askType();
     }
+
     function handleDefensePlay() {
         function askDefense() {
             showInputModal('Defensive Play', [
@@ -485,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askDefense();
     }
+
     function handleFlagPlay() {
         function askPenalty() {
             showInputModal('Penalty', [
@@ -504,6 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askPenalty();
     }
+
     // Handle Undo
     function handleUndo() {
         if (gameData.playHistory.length > 0) {
@@ -513,6 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('No plays to undo');
         }
     }
+
     function undoLastPlay() {
         const lastPlay = gameData.playHistory.pop();
         if (!lastPlay) return;
@@ -523,6 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'defense': undoDefensePlay(lastPlay); break;
         }
     }
+
     function undoPassPlay(play) {
         gameData.attempts--;
         if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].attempts--;
@@ -552,6 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
     // --- CHANGED: Remove last rush from .rushes array!
     function undoRushPlay(play) {
         gameData.rushes--;
@@ -567,6 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (gameData.rushers[play.rusher]) gameData.rushers[play.rusher].tds--;
         }
     }
+
     function undoKickPlay(play) {
         if (play.kickType === 'fg') {
             gameData.fgAttempts--;
@@ -580,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (play.result === 'good') gameData.patMade--;
         }
     }
+
     function undoDefensePlay(play) {
         switch (play.playType) {
             case 'tackle':
@@ -604,6 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
     }
+
     // Change QB (needs a button and wiring if desired)
     function handleChangeQB() {
         showInputModal('Change Quarterback', [
@@ -625,11 +643,13 @@ document.addEventListener('DOMContentLoaded', function() {
             updateAllStats();
         });
     }
+
     // End Game
     function handleEndGame() {
         const statsText = generateFinalStats();
         downloadStats(statsText);
     }
+
     function generateFinalStats() {
         let stats = `Final Stats vs ${gameData.opponent}\n\n`;
         // Pass stats
@@ -700,6 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return stats;
     }
+
     function downloadStats(text) {
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -712,115 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
         URL.revokeObjectURL(url);
     }
 
-    // NEW: MaxPreps Export Functions
-    function generateMaxPrepsStats() {
-        let maxprepsText = `MAXPREPS STAT IMPORT FILE\n`;
-        maxprepsText += `Game Date: ${new Date().toLocaleDateString()}\n`;
-        maxprepsText += `Opponent: ${gameData.opponent}\n`;
-        maxprepsText += `\n`;
-
-        // TEAM TOTALS
-        maxprepsText += `TEAM TOTALS\n`;
-        maxprepsText += `Rushing Attempts: ${gameData.rushes}\n`;
-        maxprepsText += `Rushing Yards: ${gameData.rushYards}\n`;
-        maxprepsText += `Rushing TDs: ${gameData.rushTDs}\n`;
-        maxprepsText += `Pass Attempts: ${gameData.attempts}\n`;
-        maxprepsText += `Pass Completions: ${gameData.completions}\n`;
-        maxprepsText += `Passing Yards: ${gameData.passYards}\n`;
-        maxprepsText += `Passing TDs: ${gameData.passTDs}\n`;
-        maxprepsText += `Interceptions: ${gameData.ints}\n`;
-        maxprepsText += `Sacks: ${gameData.sacks}\n`;
-        maxprepsText += `Field Goals Made: ${gameData.fgMade}\n`;
-        maxprepsText += `Field Goals Attempted: ${gameData.fgAttempts}\n`;
-        maxprepsText += `PAT Made: ${gameData.patMade}\n`;
-        maxprepsText += `PAT Attempted: ${gameData.patAttempts}\n`;
-        maxprepsText += `\n`;
-
-        // INDIVIDUAL STATS
-        maxprepsText += `INDIVIDUAL STATS\n`;
-        maxprepsText += `\n`;
-
-        // Quarterback Stats
-        maxprepsText += `PASSING\n`;
-        for (const qbNum in gameData.qbs) {
-            const qb = gameData.qbs[qbNum];
-            maxprepsText += `${qbNum},${qb.attempts},${qb.completions},${qb.yards},${qb.tds},${qb.ints}\n`;
-        }
-        maxprepsText += `\n`;
-
-        // Rushing Stats
-        maxprepsText += `RUSHING\n`;
-        for (const rusherNum in gameData.rushers) {
-            const rusher = gameData.rushers[rusherNum];
-            const longestRush = rusher.rushes && rusher.rushes.length ? Math.max(...rusher.rushes) : 0;
-            maxprepsText += `${rusherNum},${rusher.carries},${rusher.yards},${rusher.tds},${longestRush}\n`;
-        }
-        maxprepsText += `\n`;
-
-        // Receiving Stats
-        maxprepsText += `RECEIVING\n`;
-        for (const receiverNum in gameData.receivers) {
-            const receiver = gameData.receivers[receiverNum];
-            let totalCatches = 0, totalTargets = 0, totalYards = 0, totalTDs = 0;
-
-            for (const qbNum in receiver.qbs) {
-                const recStats = receiver.qbs[qbNum];
-                totalCatches += recStats.catches;
-                totalTargets += recStats.targets;
-                totalYards += recStats.yards;
-                totalTDs += recStats.tds;
-            }
-
-            if (totalTargets > 0) {
-                maxprepsText += `${receiverNum},${totalTargets},${totalCatches},${totalYards},${totalTDs}\n`;
-            }
-        }
-        maxprepsText += `\n`;
-
-        // Defense Stats
-        maxprepsText += `DEFENSE\n`;
-        const defense = gameData.defenseStats;
-        for (const playerNum in defense.players) {
-            const player = defense.players[playerNum];
-            maxprepsText += `${playerNum},${player.tackles},${player.sacks},${player.interceptions},${player.forcedFumbles},${player.tfl}\n`;
-        }
-        maxprepsText += `\n`;
-
-        // Field Goal Details
-        if (gameData.fgYards.length > 0) {
-            maxprepsText += `FIELD GOALS\n`;
-            gameData.fgYards.forEach(yards => {
-                maxprepsText += `${yards} yards\n`;
-            });
-            maxprepsText += `\n`;
-        }
-
-        
-
-        return maxprepsText;
-    }
-
-    function downloadMaxPrepsStats() {
-        const statsText = generateMaxPrepsStats();
-        const blob = new Blob([statsText], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `maxpreps_${gameData.opponent.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    function handleMaxPrepsExport() {
-        if (!gameData.opponent) {
-            alert('Please set up the game first');
-            return;
-        }
-        downloadMaxPrepsStats();
-    }
-
     // --------- Live stats window updates ---------
     function updateAllStats() {
         updatePassStats();
@@ -829,6 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDefenseStats();
         updatePenaltyStats();
     }
+
     function updatePassStats() {
         let html = '';
         // Ensure the current QB is displayed first
@@ -851,6 +764,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         passStatsContent.innerHTML = html || 'No passing stats recorded yet';
     }
+
     // ---- ENHANCED: Adds yds/carry, longest rush to display ----
     function updateRushStats() {
         let html = `<div><strong>Team:</strong> ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD
@@ -868,6 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         rushStatsContent.innerHTML = html;
     }
+
     function updateKickStats() {
         let html = `<div>PATs: ${gameData.patMade}/${gameData.patAttempts}</div>`;
         html += `<div>FGs: ${gameData.fgMade}/${gameData.fgAttempts}</div>`;
@@ -876,6 +791,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         kickStatsContent.innerHTML = html;
     }
+
     function updateDefenseStats() {
         const defense = gameData.defenseStats;
         let html = `<div><strong>Team:</strong> ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF, ${defense.tfl} TFLs</div>`;
@@ -893,6 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         defenseStatsContent.innerHTML = html;
     }
+
     function updatePenaltyStats() {
         if (gameData.penalties.length === 0) {
             penaltyStatsContent.innerHTML = 'No penalties recorded';
@@ -912,4 +829,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         penaltyStatsContent.innerHTML = html;
     }
+
 });
