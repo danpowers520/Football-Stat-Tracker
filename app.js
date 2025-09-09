@@ -36,12 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         qbs: {}
     };
-
     // ---- HELPER FUNCTIONS FOR ADVANCED RUSH STATS ----
     function getTeamYdsPerCarry() {
         return gameData.rushes ? (gameData.rushYards / gameData.rushes) : 0;
     }
-
     function getTeamLongestRush() {
         let allRushes = [];
         for (const rusherNum in gameData.rushers) {
@@ -49,16 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return allRushes.length ? Math.max(...allRushes) : 0;
     }
-
     function getRusherYdsPerCarry(rusher) {
         return rusher.carries ? (rusher.yards / rusher.carries) : 0;
     }
-
     function getRusherLongestRush(rusher) {
         return rusher.rushes && rusher.rushes.length ? Math.max(...rusher.rushes) : 0;
     }
     // ---- END HELPER FUNCTIONS ----
-
     // Get elements
     const setupForm = document.getElementById('setupForm');
     const setupModal = document.getElementById('setupModal');
@@ -120,12 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (endGameBtn) endGameBtn.addEventListener('click', handleEndGame);
     // NEW: Change QB button event
     if (changeQbBtn) changeQbBtn.addEventListener('click', handleChangeQB);
-
     // Handle input form submission (actual handling is in showInputModal callback)
     inputForm.addEventListener('submit', function(e) {
         e.preventDefault();
     });
-
     // Show input modal with custom fields and a callback
     function showInputModal(title, fields, callback) {
         inputTitle.textContent = title;
@@ -195,12 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         inputModal.style.display = 'flex';
     }
-
     function closeInputModal() {
         inputModal.style.display = 'none';
     }
-
     // All modal flows now properly abort if cancelled
+
+    // ---- PASS PLAY UPDATED FOR "DROP" ----
     function handlePassPlay() {
         function askTarget() {
             showInputModal('Pass Play', [
@@ -222,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         { value: 'incomplete', text: 'Incomplete' },
                         { value: 'touchdown', text: 'Touchdown' },
                         { value: 'interception', text: 'Interception' },
-                        // { value: 'drop', text: 'Dropped' }
+                        { value: 'drop', text: 'Dropped' } // <-- Drop option added
                     ]
                 }
             ], (resultData) => {
@@ -233,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!gameData.receivers[target]) gameData.receivers[target] = { qbs: {} };
                 if (!gameData.receivers[target].qbs[gameData.currentQB]) {
                     gameData.receivers[target].qbs[gameData.currentQB] = {
-                        catches: 0, targets: 0, yards: 0, tds: 0
+                        catches: 0, drops: 0, targets: 0, yards: 0, tds: 0
                     };
                 }
                 gameData.receivers[target].qbs[gameData.currentQB].targets++;
@@ -244,6 +237,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateAllStats();
                 } else if (result === 'incomplete') {
                     gameData.playHistory.push({ type: 'pass', target, result: 'incomplete', yards: 0 });
+                    updateAllStats();
+                } else if (result === 'drop') { // <-- Drop handling
+                    gameData.receivers[target].qbs[gameData.currentQB].drops++;
+                    gameData.playHistory.push({ type: 'pass', target, result: 'drop', yards: 0 });
                     updateAllStats();
                 } else {
                     askYards(target, result);
@@ -294,7 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askTarget();
     }
-
     // --- CHANGED: Increments rusher's .rushes array per run!
     function handleRushPlay() {
         function askRush() {
@@ -362,7 +358,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askRush();
     }
-
     function handleKickPlay() {
         function askType() {
             showInputModal('Kick Type', [
@@ -437,7 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askType();
     }
-
     function handleDefensePlay() {
         function askDefense() {
             showInputModal('Defensive Play', [
@@ -495,7 +489,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askDefense();
     }
-
     function handleFlagPlay() {
         function askPenalty() {
             showInputModal('Penalty', [
@@ -515,7 +508,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         askPenalty();
     }
-
     // Handle Undo
     function handleUndo() {
         if (gameData.playHistory.length > 0) {
@@ -525,7 +517,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('No plays to undo');
         }
     }
-
     function undoLastPlay() {
         const lastPlay = gameData.playHistory.pop();
         if (!lastPlay) return;
@@ -536,7 +527,6 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'defense': undoDefensePlay(lastPlay); break;
         }
     }
-
     function undoPassPlay(play) {
         gameData.attempts--;
         if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].attempts--;
@@ -546,6 +536,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (play.result === 'interception') {
             gameData.ints--;
             if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].ints--;
+        } else if (play.result === 'drop') { // <-- Undo drop
+            if (gameData.receivers[play.target] && gameData.receivers[play.target].qbs[gameData.currentQB]) {
+                gameData.receivers[play.target].qbs[gameData.currentQB].drops--;
+            }
         } else if (play.result === 'complete' || play.result === 'touchdown') {
             gameData.completions--;
             if (gameData.qbs[gameData.currentQB]) gameData.qbs[gameData.currentQB].completions--;
@@ -566,7 +560,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-
     // --- CHANGED: Remove last rush from .rushes array!
     function undoRushPlay(play) {
         gameData.rushes--;
@@ -582,7 +575,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (gameData.rushers[play.rusher]) gameData.rushers[play.rusher].tds--;
         }
     }
-
     function undoKickPlay(play) {
         if (play.kickType === 'fg') {
             gameData.fgAttempts--;
@@ -596,7 +588,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (play.result === 'good') gameData.patMade--;
         }
     }
-
     function undoDefensePlay(play) {
         switch (play.playType) {
             case 'tackle':
@@ -621,7 +612,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
     }
-
     // Change QB (needs a button and wiring if desired)
     function handleChangeQB() {
         showInputModal('Change Quarterback', [
@@ -643,13 +633,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateAllStats();
         });
     }
-
     // End Game
     function handleEndGame() {
         const statsText = generateFinalStats();
         downloadStats(statsText);
     }
-
     function generateFinalStats() {
         let stats = `Final Stats vs ${gameData.opponent}\n\n`;
         // Pass stats
@@ -661,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const receiver = gameData.receivers[receiverNum];
                 if (receiver.qbs && receiver.qbs[qbNum]) {
                     const recStats = receiver.qbs[qbNum];
-                    stats += `  #${receiverNum}: ${recStats.catches} catches on ${recStats.targets} targets for ${recStats.yards} yards and ${recStats.tds} TD\n`;
+                    stats += `  #${receiverNum}: ${recStats.catches} catches, ${recStats.drops} drops on ${recStats.targets} targets for ${recStats.yards} yards and ${recStats.tds} TD\n`;
                 }
             }
             stats += '\n';
@@ -720,7 +708,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return stats;
     }
-
     function downloadStats(text) {
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -741,7 +728,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDefenseStats();
         updatePenaltyStats();
     }
-
     function updatePassStats() {
         let html = '';
         // Ensure the current QB is displayed first
@@ -757,14 +743,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const receiver = gameData.receivers[receiverNum];
                 if (receiver.qbs && receiver.qbs[qbNum]) {
                     const recStats = receiver.qbs[qbNum];
-                    html += `<div>#${receiverNum}: ${recStats.catches} catches on ${recStats.targets} targets for ${recStats.yards} yards and ${recStats.tds} TD</div>`;
+                    html += `<div>#${receiverNum}: ${recStats.catches} catches, ${recStats.drops} drops on ${recStats.targets} targets for ${recStats.yards} yards and ${recStats.tds} TD</div>`;
                 }
             }
             html += '</div>';
         }
         passStatsContent.innerHTML = html || 'No passing stats recorded yet';
     }
-
     // ---- ENHANCED: Adds yds/carry, longest rush to display ----
     function updateRushStats() {
         let html = `<div><strong>Team:</strong> ${gameData.rushes} rushes, ${gameData.rushYards} yards, ${gameData.rushTDs} TD
@@ -782,7 +767,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         rushStatsContent.innerHTML = html;
     }
-
     function updateKickStats() {
         let html = `<div>PATs: ${gameData.patMade}/${gameData.patAttempts}</div>`;
         html += `<div>FGs: ${gameData.fgMade}/${gameData.fgAttempts}</div>`;
@@ -791,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         kickStatsContent.innerHTML = html;
     }
-
     function updateDefenseStats() {
         const defense = gameData.defenseStats;
         let html = `<div><strong>Team:</strong> ${defense.tackles} TKL, ${defense.sacks} SACK, ${defense.interceptions} INT, ${defense.forcedFumbles} FF, ${defense.tfl} TFLs</div>`;
@@ -809,7 +792,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         defenseStatsContent.innerHTML = html;
     }
-
     function updatePenaltyStats() {
         if (gameData.penalties.length === 0) {
             penaltyStatsContent.innerHTML = 'No penalties recorded';
@@ -829,5 +811,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         penaltyStatsContent.innerHTML = html;
     }
-
 });
