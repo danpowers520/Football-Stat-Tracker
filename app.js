@@ -795,21 +795,7 @@ document.addEventListener('DOMContentLoaded', function() {
             maxprepsText += `\n`;
         }
 
-        // Penalties
-        maxprepsText += `PENALTIES\n`;
-        if (gameData.penalties.length === 0) {
-            maxprepsText += `No penalties recorded\n`;
-        } else {
-            gameData.penalties.forEach(penalty => {
-                let playerDisplay = penalty.player;
-                if (penalty.player === 'C') playerDisplay = 'Coach';
-                else if (penalty.player === 'S') playerDisplay = 'Sideline';
-                else if (penalty.player === 'U') playerDisplay = 'Unknown';
-                else playerDisplay = `#${penalty.player}`;
-
-                maxprepsText += `${playerDisplay},${penalty.yards},${penalty.type}\n`;
-            });
-        }
+        
 
         return maxprepsText;
     }
