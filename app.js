@@ -469,6 +469,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'sack':
                         gameData.defenseStats.sacks++;
                         gameData.defenseStats.players[player].sacks++;
+                        gameData.defenseStats.tfl++;
+                        gameData.defenseStats.players[player].tfl++;
+                        gameData.defenseStats.tackles++;
+                        gameData.defenseStats.players[player].tackles++;
                         break;
                     case 'interception':
                         gameData.defenseStats.interceptions++;
@@ -481,6 +485,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'tfl':
                         gameData.defenseStats.tfl++;
                         gameData.defenseStats.players[player].tfl++;
+                        gameData.defenseStats.tackles++;
+                        gameData.defenseStats.players[player].tackles++;
                         break;
                 }
                 gameData.playHistory.push({ type: 'defense', player, playType });
