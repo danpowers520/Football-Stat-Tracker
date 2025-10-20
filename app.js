@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!gameData.defenseStats.players[player]) {
                     gameData.defenseStats.players[player] = {
                         tackles: 0,
-                        assitedTackles: 0,
+                        assistedTackles: 0,
                         sacks: 0,
                         interceptions: 0,
                         forcedFumbles: 0,
@@ -627,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (gameData.defenseStats.players[play.player]) gameData.defenseStats.players[play.player].tackles--;
                 break;
             case 'assist':
-                gameData.defenseStats.assitedTackles--;
+                gameData.defenseStats.assistedTackles--;
                 if (gameData.defenseStats.players[play.player]) gameData.defenseStats.players[play.player].assistedTackles--;
                 break;
             case 'sack':
