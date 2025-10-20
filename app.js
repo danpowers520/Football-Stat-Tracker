@@ -27,13 +27,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // ENHANCED: Each rusher now tracks every carry's yardage!
         rushers: {},
         defenseStats: {
-            tackles: 0,
-            sacks: 0,
-            interceptions: 0,
-            forcedFumbles: 0,
-            tfl: 0,
-            players: {}
-        },
+    tackles: 0,
+    assistedTackles: 0,
+    sacks: 0,
+    interceptions: 0,
+    forcedFumbles: 0,
+    tfl: 0,
+    players: {}
+}
+
         qbs: {}
     };
     // ---- HELPER FUNCTIONS FOR ADVANCED RUSH STATS ----
@@ -441,12 +443,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     label: 'Play Type:',
                     id: 'playType',
                     options: [
-                        { value: 'tackle', text: 'Tackle' },
-                        { value: 'sack', text: 'Sack' },
-                        { value: 'interception', text: 'Interception' },
-                        { value: 'fumble', text: 'Forced Fumble' },
-                        { value: 'tfl', text: 'TFL' }
-                    ]
+    { value: 'tackle', text: 'Solo Tackle' },
+    { value: 'assist', text: 'Assisted Tackle' },
+    { value: 'sack', text: 'Sack' },
+    { value: 'halfSack', text: 'Half Sack (shared)' },
+    { value: 'interception', text: 'Interception' },
+    { value: 'fumble', text: 'Forced Fumble' },
+    { value: 'tfl', text: 'TFL' }
+]
+
                 }
             ], (data) => {
                 if (data.cancelled) return;
@@ -455,6 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!gameData.defenseStats.players[player]) {
                     gameData.defenseStats.players[player] = {
                         tackles: 0,
+                        assitedTackles: 0,
                         sacks: 0,
                         interceptions: 0,
                         forcedFumbles: 0,
@@ -462,33 +468,53 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
                 switch (playType) {
-                    case 'tackle':
-                        gameData.defenseStats.tackles++;
-                        gameData.defenseStats.players[player].tackles++;
-                        break;
-                    case 'sack':
-                        gameData.defenseStats.sacks++;
-                        gameData.defenseStats.players[player].sacks++;
-                        gameData.defenseStats.tfl++;
-                        gameData.defenseStats.players[player].tfl++;
-                        gameData.defenseStats.tackles++;
-                        gameData.defenseStats.players[player].tackles++;
-                        break;
-                    case 'interception':
-                        gameData.defenseStats.interceptions++;
-                        gameData.defenseStats.players[player].interceptions++;
-                        break;
-                    case 'fumble':
-                        gameData.defenseStats.forcedFumbles++;
-                        gameData.defenseStats.players[player].forcedFumbles++;
-                        break;
-                    case 'tfl':
-                        gameData.defenseStats.tfl++;
-                        gameData.defenseStats.players[player].tfl++;
-                        gameData.defenseStats.tackles++;
-                        gameData.defenseStats.players[player].tackles++;
-                        break;
-                }
+    case 'tackle':
+        gameData.defenseStats.tackles++;
+        gameData.defenseStats.players[player].tackles++;
+        break;
+
+    case 'assist':
+        gameData.defenseStats.assistedTackles++;
+        gameData.defenseStats.players[player].assistedTackles++;
+        break;
+
+    case 'sack':
+        gameData.defenseStats.sacks++;
+        gameData.defenseStats.players[player].sacks++;
+        gameData.defenseStats.tfl++;
+        gameData.defenseStats.players[player].tfl++;
+        gameData.defenseStats.tackles++;
+        gameData.defenseStats.players[player].tackles++;
+        break;
+
+    case 'halfSack':
+        // add 0.5 sack, count as assisted tackle
+        gameData.defenseStats.sacks += 0.5;
+        gameData.defenseStats.players[player].sacks += 0.5;
+        gameData.defenseStats.assistedTackles++;
+        gameData.defenseStats.players[player].assistedTackles++;
+        gameData.defenseStats.tfl += 0.5;
+        gameData.defenseStats.players[player].tfl += 0.5;
+        break;
+
+    case 'interception':
+        gameData.defenseStats.interceptions++;
+        gameData.defenseStats.players[player].interceptions++;
+        break;
+
+    case 'fumble':
+        gameData.defenseStats.forcedFumbles++;
+        gameData.defenseStats.players[player].forcedFumbles++;
+        break;
+
+    case 'tfl':
+        gameData.defenseStats.tfl++;
+        gameData.defenseStats.players[player].tfl++;
+        gameData.defenseStats.tackles++;
+        gameData.defenseStats.players[player].tackles++;
+        break;
+}
+
                 gameData.playHistory.push({ type: 'defense', player, playType });
                 updateAllStats();
             });
@@ -600,6 +626,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 gameData.defenseStats.tackles--;
                 if (gameData.defenseStats.players[play.player]) gameData.defenseStats.players[play.player].tackles--;
                 break;
+            case 'assist':
+                gameData.defenseStats.assitedTackles--;
+                if (gameData.defenseStats.players[play.player]) gameData.defenseStats.players[play.player].assistedTackles--;
+                break;
             case 'sack':
                 gameData.defenseStats.sacks--;
                 if (gameData.defenseStats.players[play.player]) gameData.defenseStats.players[play.player].sacks--;
@@ -616,6 +646,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 gameData.defenseStats.tfl--;
                 if (gameData.defenseStats.players[play.player]) gameData.defenseStats.players[play.player].tfl--;
                 break;
+                case 'halfSack':
+    gameData.defenseStats.sacks -= 0.5;
+    gameData.defenseStats.players[play.player].sacks -= 0.5;
+    gameData.defenseStats.assistedTackles--;
+    gameData.defenseStats.players[play.player].assistedTackles--;
+    gameData.defenseStats.tfl -= 0.5;
+    gameData.defenseStats.players[play.player].tfl -= 0.5;
+    break;
+
         }
     }
     // Change QB (needs a button and wiring if desired)
@@ -686,6 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const player = defense.players[playerNum];
             let statItems = [];
             if (player.tackles > 0) statItems.push(`${player.tackles} TKL`);
+            if (player.assistedTackles > 0) statItems.push(`${player.assistedTackles} AST`);
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
@@ -788,6 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const player = defense.players[playerNum];
             let statItems = [];
             if (player.tackles > 0) statItems.push(`${player.tackles} TKL`);
+            if (player.assistedTackles > 0) statItems.push(`${player.assistedTackles} AST`);
             if (player.sacks > 0) statItems.push(`${player.sacks} SACK`);
             if (player.interceptions > 0) statItems.push(`${player.interceptions} INT`);
             if (player.forcedFumbles > 0) statItems.push(`${player.forcedFumbles} FF`);
