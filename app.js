@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     forcedFumbles: 0,
     tfl: 0,
     players: {}
-}
+},
 
         qbs: {}
     };
